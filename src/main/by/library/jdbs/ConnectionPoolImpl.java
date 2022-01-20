@@ -9,36 +9,41 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
+//release connection in genericDAO
+public class ConnectionPoolImpl implements ConnectionPool {
 
-public class ConnectionPoolImpl
-        implements ConnectionPool {
-
-    private String url;
-    private String user;
-    private String password;
-    private Queue<Connection> connectionPool;
+    private static Queue<Connection> connectionPool;
     private List<Connection> usedConnections = new ArrayList<>();
+    private static ConnectionPoolImpl instance;
     private static final int INITIAL_POOL_SIZE = 10;
     public static final String DB_URL_KEY = "db.url";
     public static final String DB_USERNAME_KEY = "db.username";
     public static final String DB_PASS_KEY = "db.pass";
 
-    public ConnectionPoolImpl(String url, String user, String password, Queue<Connection> connectionPool) {
-        this.url = DB_URL_KEY;
-        this.user = DB_USERNAME_KEY;
-        this.password = DB_PASS_KEY;
-        this.connectionPool = connectionPool;
-
+    private ConnectionPoolImpl() {
     }
 
-    public static ConnectionPoolImpl create(String url, String user, String password) throws SQLException {
-        Queue<Connection> pool = new ArrayBlockingQueue<>(INITIAL_POOL_SIZE);
-        for (int i = 0; i < INITIAL_POOL_SIZE; i++) {
-            pool.add(createConnection(url, user, password));
+    public static ConnectionPoolImpl getInstance() {
+        if (instance == null) {
+            instance = create();
         }
-        return new ConnectionPoolImpl(url, user, password, pool);
+        return instance;
     }
 
+    private static ConnectionPoolImpl create() {
+        try {
+            connectionPool = new ArrayBlockingQueue<>(INITIAL_POOL_SIZE);
+            for (int i = 0; i < INITIAL_POOL_SIZE; i++) {
+                connectionPool.add(createConnection(
+                        PropertiesManager.getPropertyByKey(DB_URL_KEY),
+                        PropertiesManager.getPropertyByKey(DB_USERNAME_KEY),
+                        PropertiesManager.getPropertyByKey(DB_PASS_KEY)));
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return new ConnectionPoolImpl();
+    }
 
     @Override
     public Connection getConnection() {
@@ -48,7 +53,10 @@ public class ConnectionPoolImpl
     }
 
     @Override
-    public boolean releaseConnection(Connection connection) {
+    public boolean releaseConnection(Connection connection) throws SQLException {
+        if(!connection.getAutoCommit()){
+            connection.setAutoCommit(true);
+        }
         connectionPool.add(connection);
         return usedConnections.remove(connection);
     }
@@ -59,20 +67,5 @@ public class ConnectionPoolImpl
 
     public int getSize() {
         return connectionPool.size() + usedConnections.size();
-    }
-
-    @Override
-    public String getUrl() {
-        return url;
-    }
-
-    @Override
-    public String getUser() {
-        return user;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
     }
 }
