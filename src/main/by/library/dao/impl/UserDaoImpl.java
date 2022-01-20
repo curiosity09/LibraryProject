@@ -15,14 +15,15 @@ public class UserDaoImpl extends GenericDAO<User> implements UserDao {
     public static final String DB_USERNAME_KEY = "db.username";
     public static final String DB_PASS_KEY = "db.pass";
     public static final String SQL_ADD_NEW_USER = "INSERT INTO library.account (username, password, role, first_name, last_name, phone_number, email) VALUES (?,?,?,?,?,?,?)";
-    public static final String SQL_FIND_ALL_USERS = "SELECT id, username, first_name, last_name, phone_number, email FROM library.account";
+    public static final String SQL_FIND_ALL_USERS = "SELECT id, username,role, first_name, last_name, phone_number, email FROM library.account";
     public static final String SQL_ADD_USER_IN_BLACK_LIST = "INSERT INTO library.black_list (user_id) VALUES ((SELECT id FROM library.account WHERE username = (?)))";
-    public static final String SQL_FIND_USER_BY_USERNAME = "SELECT id, username, first_name, last_name, phone_number, email FROM library.account WHERE username = (?)";
+    public static final String SQL_FIND_USER_BY_USERNAME = "SELECT id, username, role, first_name, last_name, phone_number, email FROM library.account WHERE username = (?)";
     private ConnectionPool connectionPool;
     private Connection connection;
 
     public UserDaoImpl() {
         try {
+            Class.forName("org.postgresql.Driver");
             connectionPool = ConnectionPoolImpl.create(
                     PropertiesManager.getPropertyByKey(DB_URL_KEY),
                     PropertiesManager.getPropertyByKey(DB_USERNAME_KEY),
@@ -30,7 +31,7 @@ public class UserDaoImpl extends GenericDAO<User> implements UserDao {
             connection = connectionPool.getConnection();
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-        } catch (SQLException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
@@ -40,6 +41,7 @@ public class UserDaoImpl extends GenericDAO<User> implements UserDao {
         int userId = userSet.getInt("id");
         return new User(
                 userId, userSet.getString("username"),
+                userSet.getString("role"),
                 new UserData(
                         userSet.getString("first_name"),
                         userSet.getString("last_name"),
@@ -63,6 +65,7 @@ public class UserDaoImpl extends GenericDAO<User> implements UserDao {
         int userId = userSet.getInt("id");
         return new User(
                 userId, userSet.getString("username"),
+                userSet.getString("role"),
                 new UserData(
                         userSet.getString("first_name"),
                         userSet.getString("last_name"),
@@ -81,8 +84,8 @@ public class UserDaoImpl extends GenericDAO<User> implements UserDao {
     }
 
     @Override
-    public List<User> findUserByUsername(String username){
-        return findEntityByYardstick(username,connection, SQL_FIND_USER_BY_USERNAME);
+    public List<User> findUserByUsername(String username) {
+        return findEntityByYardstick(username, connection, SQL_FIND_USER_BY_USERNAME);
     }
 
     @Override

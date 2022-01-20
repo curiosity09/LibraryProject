@@ -15,12 +15,12 @@ public class OrderDaoImpl extends GenericDAO<Order> implements OrderDao {
     public static final String DB_URL_KEY = "db.url";
     public static final String DB_USERNAME_KEY = "db.username";
     public static final String DB_PASS_KEY = "db.pass";
-    public static final String SQL_SELECT_ALL_ORDER = "SELECT o.id AS order_id,name, u.first_name AS author_name, u.last_name AS author_surname, publication_year, a.id AS reader_id, username, a.first_name AS reader_name, a.last_name AS reader_surname,phone_number,email,rental_time,rental_period\n" +
+    public static final String SQL_SELECT_ALL_ORDER = "SELECT o.id AS order_id,name, u.first_name AS author_name, u.last_name AS author_surname, publication_year, a.id AS reader_id, username,role, a.first_name AS reader_name, a.last_name AS reader_surname,phone_number,email,rental_time,rental_period\n" +
             "FROM library.order_card o\n" +
             "JOIN library.book b ON o.book_id = b.id\n" +
             "JOIN library.author u ON b.author_id = u.id\n" +
             "JOIN library.account a ON o.reader_id = a.id\n" +
-            "GROUP BY o.id, name,u.first_name, u.last_name, publication_year,a.id, username, a.first_name, a.last_name, phone_number, email, rental_time, rental_period;";
+            "GROUP BY o.id, name,u.first_name, u.last_name, publication_year,a.id, username, role, a.first_name, a.last_name, phone_number, email, rental_time, rental_period;";
     public static final String SQL_ADD_ORDER = "INSERT INTO library.order_card (book_id, reader_id, rental_time) VALUES ((SELECT id FROM library.book b WHERE b.name = (?)),(SELECT id FROM library.account a WHERE a.username = (?)),(date(now())))";
     public static final String SQL_DELETE_ORDER = "DELETE FROM library.order_card WHERE id = (?)";
     private List<Order> orderList = new ArrayList<>();
@@ -53,6 +53,7 @@ public class OrderDaoImpl extends GenericDAO<Order> implements OrderDao {
                 orderSet.getInt("publication_year"));
         User userForResult = new User(
                 userId, orderSet.getString("username"),
+                orderSet.getString("role"),
                 new UserData(
                 orderSet.getString("reader_name"),
                 orderSet.getString("reader_surname"),
