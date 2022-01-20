@@ -1,5 +1,7 @@
-package main.by.library.dao;
+package main.by.library.dao.impl;
 
+import main.by.library.dao.GenericDAO;
+import main.by.library.dao.UserDao;
 import main.by.library.entity.*;
 import main.by.library.jdbs.ConnectionPool;
 import main.by.library.jdbs.ConnectionPoolImpl;
@@ -11,29 +13,22 @@ import java.util.Objects;
 
 public class UserDaoImpl extends GenericDAO<User> implements UserDao {
 
-    public static final String DB_URL_KEY = "db.url";
-    public static final String DB_USERNAME_KEY = "db.username";
-    public static final String DB_PASS_KEY = "db.pass";
+    private static UserDaoImpl instance;
     public static final String SQL_ADD_NEW_USER = "INSERT INTO library.account (username, password, role, first_name, last_name, phone_number, email) VALUES (?,?,?,?,?,?,?)";
     public static final String SQL_FIND_ALL_USERS = "SELECT id, username,role, first_name, last_name, phone_number, email FROM library.account";
     public static final String SQL_ADD_USER_IN_BLACK_LIST = "INSERT INTO library.black_list (user_id) VALUES ((SELECT id FROM library.account WHERE username = (?)))";
-    public static final String SQL_FIND_USER_BY_USERNAME = "SELECT id, username, role, first_name, last_name, phone_number, email FROM library.account WHERE username = (?)";
+    public static final String SQL_FIND_USER_BY_USERNAME = "SELECT id, username,password, role, first_name, last_name, phone_number, email FROM library.account WHERE username = (?)";
     private ConnectionPool connectionPool;
     private Connection connection;
 
-    public UserDaoImpl() {
-        try {
-            Class.forName("org.postgresql.Driver");
-            connectionPool = ConnectionPoolImpl.create(
-                    PropertiesManager.getPropertyByKey(DB_URL_KEY),
-                    PropertiesManager.getPropertyByKey(DB_USERNAME_KEY),
-                    PropertiesManager.getPropertyByKey(DB_PASS_KEY));
-            connection = connectionPool.getConnection();
-            connection.setAutoCommit(false);
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
+    private UserDaoImpl() {
+    }
+
+    public static UserDaoImpl getInstance() {
+        if (instance == null) {
+            instance = new UserDaoImpl();
         }
+        return instance;
     }
 
     @Override
@@ -65,6 +60,7 @@ public class UserDaoImpl extends GenericDAO<User> implements UserDao {
         int userId = userSet.getInt("id");
         return new User(
                 userId, userSet.getString("username"),
+                userSet.getString("password"),
                 userSet.getString("role"),
                 new UserData(
                         userSet.getString("first_name"),
@@ -75,17 +71,17 @@ public class UserDaoImpl extends GenericDAO<User> implements UserDao {
 
     @Override
     public boolean AddNewUser(User user) {
-        return addNew(user, connection, SQL_ADD_NEW_USER);
+        return addNew(user, ConnectionPoolImpl.getInstance().getConnection(), SQL_ADD_NEW_USER);
     }
 
     @Override
     public List<User> findAllUsers() {
-        return findAll(connection, SQL_FIND_ALL_USERS);
+        return findAll(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_ALL_USERS);
     }
 
     @Override
     public List<User> findUserByUsername(String username) {
-        return findEntityByYardstick(username, connection, SQL_FIND_USER_BY_USERNAME);
+        return findEntityByYardstick(username, ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_USER_BY_USERNAME);
     }
 
     @Override

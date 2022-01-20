@@ -1,5 +1,7 @@
-package main.by.library.dao;
+package main.by.library.dao.impl;
 
+import main.by.library.dao.BookDao;
+import main.by.library.dao.GenericDAO;
 import main.by.library.entity.Author;
 import main.by.library.entity.Book;
 import main.by.library.entity.Genre;
@@ -16,9 +18,7 @@ import java.util.Optional;
 
 public class BookDaoImpl extends GenericDAO<Book> implements BookDao {
 
-    public static final String DB_URL_KEY = "db.url";
-    public static final String DB_USERNAME_KEY = "db.username";
-    public static final String DB_PASS_KEY = "db.pass";
+    private static BookDaoImpl instance;
     public static final String SQL_SELECT_BOOK_BY_NAME = "SELECT b.name, b.publication_year, a.first_name AS first_name, a.last_name AS last_name, g.name AS genre_name FROM library.book b JOIN library.author a ON b.author_id = a.id JOIN library.genre g ON b.genre_id = g.id GROUP BY b.name, b.publication_year, a.first_name,a.last_name, g.name HAVING b.name = (?)";
     public static final String SQL_SELECT_ALL_BOOK = "SELECT b.name, b.publication_year, a.first_name AS first_name, a.last_name AS last_name, g.name AS genre_name FROM library.book b JOIN library.author a ON b.author_id = a.id JOIN library.genre g ON b.genre_id = g.id GROUP BY b.name, b.publication_year, a.first_name,a.last_name, g.name";
     public static final String SQL_SELECT_BOOK_BY_AUTHOR_SURNAME = "SELECT b.name, b.publication_year, a.first_name AS first_name, a.last_name AS last_name, g.name AS genre_name FROM library.book b JOIN library.author a ON b.author_id = a.id JOIN library.genre g ON b.genre_id = g.id GROUP BY b.name, b.publication_year, a.first_name,a.last_name, g.name HAVING a.last_name = (?)";
@@ -27,18 +27,14 @@ public class BookDaoImpl extends GenericDAO<Book> implements BookDao {
     private ConnectionPool connectionPool;
     private Connection connection;
 
-    public BookDaoImpl() {
-        try {
-            connectionPool = ConnectionPoolImpl.create(
-                    PropertiesManager.getPropertyByKey(DB_URL_KEY),
-                    PropertiesManager.getPropertyByKey(DB_USERNAME_KEY),
-                    PropertiesManager.getPropertyByKey(DB_PASS_KEY));
-            connection = connectionPool.getConnection();
-            connection.setAutoCommit(false);
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-        } catch (SQLException e) {
-            e.printStackTrace();
+    private BookDaoImpl() {
+    }
+
+    public static BookDaoImpl getInstance() {
+        if (instance == null) {
+            instance = new BookDaoImpl();
         }
+        return instance;
     }
 
     @Override
@@ -66,26 +62,26 @@ public class BookDaoImpl extends GenericDAO<Book> implements BookDao {
 
     @Override
     public List<Book> findBookByName(String bookName) {
-        return findEntityByYardstick(bookName, connection, SQL_SELECT_BOOK_BY_NAME);
+        return findEntityByYardstick(bookName, ConnectionPoolImpl.getInstance().getConnection(), SQL_SELECT_BOOK_BY_NAME);
     }
 
     @Override
     public List<Book> findAllBook() {
-        return findAll(connection, SQL_SELECT_ALL_BOOK);
+        return findAll(ConnectionPoolImpl.getInstance().getConnection(), SQL_SELECT_ALL_BOOK);
     }
 
     @Override
     public List<Book> findBookByAuthorSurname(String authorSurname) {
-        return findEntityByYardstick(authorSurname, connection, SQL_SELECT_BOOK_BY_AUTHOR_SURNAME);
+        return findEntityByYardstick(authorSurname, ConnectionPoolImpl.getInstance().getConnection(), SQL_SELECT_BOOK_BY_AUTHOR_SURNAME);
     }
 
     @Override
     public List<Book> findBookByGenre(String genreName) {
-        return findEntityByYardstick(genreName, connection, SQL_SELECT_BOOK_BY_GENRE);
+        return findEntityByYardstick(genreName, ConnectionPoolImpl.getInstance().getConnection(), SQL_SELECT_BOOK_BY_GENRE);
     }
 
     @Override
     public boolean AddNewBook(Book book) {
-        return addNew(book, connection, SQL_ADD_NEW_BOOK);
+        return addNew(book, ConnectionPoolImpl.getInstance().getConnection(), SQL_ADD_NEW_BOOK);
     }
 }
