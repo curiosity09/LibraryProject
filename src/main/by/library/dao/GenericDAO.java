@@ -13,6 +13,8 @@ public abstract class GenericDAO<T> {
     public List<T> findAll(Connection connection, String sqlQuery) {
         List<T> list = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(sqlQuery)) {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 list.add(mapToEntityForGlobalSearch(resultSet));
@@ -24,6 +26,8 @@ public abstract class GenericDAO<T> {
                 connection.rollback();
             } catch (SQLException e) {
                 e.printStackTrace();
+            } finally {
+
             }
         }
         return list;
@@ -35,6 +39,8 @@ public abstract class GenericDAO<T> {
         boolean result = false;
         if (Objects.nonNull(t)) {
             try (PreparedStatement statement = connection.prepareStatement(sqlQuery)) {
+                connection.setAutoCommit(false);
+                connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
                 setFieldToStatement(statement, t);
                 result = statement.executeUpdate() == 1;
                 connection.commit();
@@ -57,6 +63,8 @@ public abstract class GenericDAO<T> {
         if (Objects.nonNull(yardstick)) {
             try(PreparedStatement statement =
                         connection.prepareStatement(sqlQuery)) {
+                connection.setAutoCommit(false);
+                connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
                 statement.setString(1, yardstick);
                 ResultSet resultSet = statement.executeQuery();
                 while (resultSet.next()) {
