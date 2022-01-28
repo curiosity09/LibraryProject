@@ -33,4 +33,14 @@ public class UserServiceImpl implements UserService {
     public List<User> findUserByUsername(String username) {
         return userDao.findUserByUsername(username);
     }
+
+    @Override
+    public User checkAuthentication(String username) {
+        return userDao.checkAuthentication(username);
+    }
+
+    @Override
+    public boolean isUserExist(String value) {
+        return userDao.isUserExist(value);
+    }
 }

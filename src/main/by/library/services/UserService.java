@@ -14,4 +14,7 @@ public interface UserService {
 
     List<User> findUserByUsername(String username);
 
+    User checkAuthentication(String username);
+
+    boolean isUserExist(String value);
 }
