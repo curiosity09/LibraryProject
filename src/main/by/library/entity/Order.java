@@ -1,39 +1,44 @@
 package main.by.library.entity;
 
-import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
 public class Order {
 
     private int id;
-    private Book book;
+    private List<Book> book;
     private User user;
-    private Date rentalTime;
-    private LocalDate rentalPeriod;
+    private LocalDateTime rentalTime;
+    private LocalDateTime rentalPeriod;
 
-    public Order(int id,Book book, User reader, Date rentalTime, LocalDate rentalPeriod) {
+    public Order(int id, List<Book> book, User user, LocalDateTime rentalTime, LocalDateTime rentalPeriod) {
         this.id = id;
+        this.book = book;
+        this.user = user;
+        this.rentalTime = rentalTime;
+        this.rentalPeriod = rentalPeriod;
+    }
+
+    public Order(int id, List<Book> book, User user, LocalDateTime rentalTime) {
+        this.id = id;
+        this.book = book;
+        this.user = user;
+        this.rentalTime = rentalTime;
+    }
+
+    public Order(List<Book> book, User reader, LocalDateTime rentalTime, LocalDateTime rentalPeriod) {
         this.book = book;
         this.user = reader;
         this.rentalTime = rentalTime;
         this.rentalPeriod = rentalPeriod;
     }
 
-    public Order(int id, Book book, User reader, Date rentalTime) {
-        this.id = id;
-        this.book = book;
-        this.user = reader;
-        this.rentalTime = rentalTime;
-    }
-
-    public Order(Book book, User reader) {
-        this.book = book;
-        this.user = reader;
-    }
-
     public Order(int id) {
         this.id = id;
     }
+
+
 
     @Override
     public boolean equals(Object o) {
@@ -43,10 +48,10 @@ public class Order {
         Order order = (Order) o;
 
         if (id != order.id) return false;
-        if (book != null ? !book.equals(order.book) : order.book != null) return false;
-        if (user != null ? !user.equals(order.user) : order.user != null) return false;
-        if (rentalTime != null ? !rentalTime.equals(order.rentalTime) : order.rentalTime != null) return false;
-        return rentalPeriod != null ? rentalPeriod.equals(order.rentalPeriod) : order.rentalPeriod == null;
+        if (!Objects.equals(book, order.book)) return false;
+        if (!Objects.equals(user, order.user)) return false;
+        if (!Objects.equals(rentalTime, order.rentalTime)) return false;
+        return Objects.equals(rentalPeriod, order.rentalPeriod);
     }
 
     @Override
@@ -78,14 +83,6 @@ public class Order {
         this.id = id;
     }
 
-    public Book getBook() {
-        return book;
-    }
-
-    public void setBook(Book book) {
-        this.book = book;
-    }
-
     public User getUser() {
         return user;
     }
@@ -94,19 +91,27 @@ public class Order {
         this.user = user;
     }
 
-    public Date getRentalTime() {
+    public LocalDateTime getRentalTime() {
         return rentalTime;
     }
 
-    public void setRentalTime(Date rentalTime) {
+    public void setRentalTime(LocalDateTime rentalTime) {
         this.rentalTime = rentalTime;
     }
 
-    public LocalDate getRentalPeriod() {
+    public LocalDateTime getRentalPeriod() {
         return rentalPeriod;
     }
 
-    public void setRentalPeriod(LocalDate rentalPeriod) {
+    public void setRentalPeriod(LocalDateTime rentalPeriod) {
         this.rentalPeriod = rentalPeriod;
+    }
+
+    public List<Book> getBook() {
+        return book;
+    }
+
+    public void setBook(List<Book> book) {
+        this.book = book;
     }
 }

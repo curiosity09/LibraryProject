@@ -7,6 +7,7 @@ public class User {
     private String password;
     private String role;
     private UserData userData;
+    private boolean isBanned;
     public static final String ROLE_ADMIN = "admin";
     public static final String ROLE_LIBRARIAN = "librarian";
     public static final String ROLE_USER = "user";
@@ -17,9 +18,18 @@ public class User {
         this.role = role;
     }
 
-    public User(int id,String username, UserData userData) {
+    public User(int id,String username, String role, UserData userData) {
         this.id = id;
         this.username = username;
+        this.role = role;
+        this.userData = userData;
+    }
+
+    public User(int id, String username, String password, String role, UserData userData) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.role = role;
         this.userData = userData;
     }
 
@@ -38,6 +48,7 @@ public class User {
         User user = (User) o;
 
         if (id != user.id) return false;
+        if (isBanned != user.isBanned) return false;
         if (username != null ? !username.equals(user.username) : user.username != null) return false;
         if (password != null ? !password.equals(user.password) : user.password != null) return false;
         if (role != null ? !role.equals(user.role) : user.role != null) return false;
@@ -51,6 +62,7 @@ public class User {
         result = 31 * result + (password != null ? password.hashCode() : 0);
         result = 31 * result + (role != null ? role.hashCode() : 0);
         result = 31 * result + (userData != null ? userData.hashCode() : 0);
+        result = 31 * result + (isBanned ? 1 : 0);
         return result;
     }
 
@@ -62,6 +74,7 @@ public class User {
                 ", password='" + password + '\'' +
                 ", role='" + role + '\'' +
                 ", userData=" + userData +
+                ", isBanned=" + isBanned +
                 '}';
     }
 
@@ -103,5 +116,13 @@ public class User {
 
     public void setUserData(UserData userData) {
         this.userData = userData;
+    }
+
+    public boolean isBanned() {
+        return isBanned;
+    }
+
+    public void setBanned(boolean banned) {
+        isBanned = banned;
     }
 }
