@@ -1,6 +1,7 @@
 package main.by.library.filter;
 
 
+import main.by.library.controller.FrontController;
 import main.by.library.entity.User;
 import main.by.library.services.UserService;
 import main.by.library.services.impl.UserServiceImpl;
@@ -13,7 +14,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
-@WebFilter(urlPatterns = "/admin.html")
+@WebFilter(urlPatterns = "/page/admin/admin.jsp")
 public class UnauthorizedAdminFilter implements Filter {
 
     @Override
@@ -23,18 +24,25 @@ public class UnauthorizedAdminFilter implements Filter {
             FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-        String username = (String) httpRequest.getSession().getAttribute(ProfileTools.SESSION_LOGGED_IN_ATTRIBUTE_NAME);
+        String username = (String) httpRequest.getSession().getAttribute(FrontController.SESSION_LOGGED_IN_ATTRIBUTE_NAME);
         UserService userService = new UserServiceImpl();
-        List<User> userByUsername = userService.findUserByUsername(username);
-        String role = null;
-        for (User user : userByUsername) {
-            User userForResult = new User(user.getUsername(), user.getPassword(), user.getRole());
-            role = userForResult.getRole();
-        }
-        if (ProfileTools.isLoggedIn(httpRequest) && Objects.equals(role, User.ROLE_ADMIN)) {
-            filterChain.doFilter(servletRequest, servletResponse);
+        User checkedUser = userService.checkAuthentication(username);
+        if (Objects.nonNull(checkedUser)) {
+            switch (checkedUser.getRole()) {
+                case User.ROLE_ADMIN: {
+                    filterChain.doFilter(servletRequest, servletResponse);
+                    break;
+                }
+                case User.ROLE_USER: {
+                    httpResponse.sendRedirect("/page/user/user.jsp");
+                    break;
+                }
+                default:
+                    //TODO librarian
+                    break;
+            }
         } else {
-            httpResponse.sendRedirect("/user.html");
+            httpResponse.sendRedirect("/page/errorPage.jsp");
         }
     }
 }
