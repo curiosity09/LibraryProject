@@ -1,10 +1,11 @@
 package main.by.library.entity;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-public class Order {
+public class Order implements Serializable {
 
     private int id;
     private List<Book> book;
@@ -38,7 +39,7 @@ public class Order {
         this.id = id;
     }
 
-
+    public Order() {}
 
     @Override
     public boolean equals(Object o) {

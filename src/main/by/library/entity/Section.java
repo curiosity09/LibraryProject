@@ -1,10 +1,17 @@
 package main.by.library.entity;
 
-public class Section {
+import java.io.Serializable;
+
+public class Section implements Serializable {
     private int id;
     private String name;
 
     public Section(String name) {
+        this.name = name;
+    }
+
+    public Section(int id, String name) {
+        this.id = id;
         this.name = name;
     }
 

@@ -1,14 +1,19 @@
 package main.by.library.entity;
 
-public class Author {
+import java.io.Serializable;
+
+public class Author implements Serializable {
 
     private int id;
-    private String firstName;
-    private String lastName;
+    private String fullName;
 
-    public Author(String firstName, String lastName) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public Author(int id, String fullName) {
+        this.id = id;
+        this.fullName = fullName;
+    }
+
+    public Author(String fullName) {
+        this.fullName = fullName;
     }
 
     @Override
@@ -19,15 +24,13 @@ public class Author {
         Author author = (Author) o;
 
         if (id != author.id) return false;
-        if (firstName != null ? !firstName.equals(author.firstName) : author.firstName != null) return false;
-        return lastName != null ? lastName.equals(author.lastName) : author.lastName == null;
+        return fullName != null ? fullName.equals(author.fullName) : author.fullName == null;
     }
 
     @Override
     public int hashCode() {
         int result = id;
-        result = 31 * result + (firstName != null ? firstName.hashCode() : 0);
-        result = 31 * result + (lastName != null ? lastName.hashCode() : 0);
+        result = 31 * result + (fullName != null ? fullName.hashCode() : 0);
         return result;
     }
 
@@ -35,8 +38,7 @@ public class Author {
     public String toString() {
         return "Author{" +
                 "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
+                ", fullName='" + fullName + '\'' +
                 '}';
     }
 
@@ -48,19 +50,11 @@ public class Author {
         this.id = id;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getFullName() {
+        return fullName;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 }

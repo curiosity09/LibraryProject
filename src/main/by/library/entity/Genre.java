@@ -1,11 +1,18 @@
 package main.by.library.entity;
 
-public class Genre {
+import java.io.Serializable;
+
+public class Genre implements Serializable {
 
     private int id;
     private String name;
 
     public Genre(String name) {
+        this.name = name;
+    }
+
+    public Genre(int id, String name) {
+        this.id = id;
         this.name = name;
     }
 

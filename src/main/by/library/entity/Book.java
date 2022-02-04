@@ -1,6 +1,8 @@
 package main.by.library.entity;
 
-public class Book {
+import java.io.Serializable;
+
+public class Book implements Serializable {
     private int id;
     private String name;
     private Author author;
@@ -48,6 +50,18 @@ public class Book {
         this.quantity = quantity;
         this.publicationYear = publicationYear;
     }
+
+    public Book(int id, String name, Author author, Genre genre, Section section, int quantity, int publicationYear) {
+        this.id = id;
+        this.name = name;
+        this.author = author;
+        this.genre = genre;
+        this.section = section;
+        this.quantity = quantity;
+        this.publicationYear = publicationYear;
+    }
+
+    public Book() {}
 
     @Override
     public boolean equals(Object o) {

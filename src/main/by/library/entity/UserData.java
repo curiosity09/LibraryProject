@@ -1,6 +1,8 @@
 package main.by.library.entity;
 
-public class UserData {
+import java.io.Serializable;
+
+public class UserData implements Serializable {
 
     private String name;
     private String surname;

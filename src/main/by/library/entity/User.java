@@ -1,6 +1,8 @@
 package main.by.library.entity;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
 
     private int id;
     private String username;
@@ -38,6 +40,15 @@ public class User {
         this.password = password;
         this.role = role;
         this.userData = userData;
+    }
+
+    public User(String username, UserData userData) {
+        this.username = username;
+        this.userData = userData;
+    }
+
+    public User(String username) {
+        this.username = username;
     }
 
     @Override
