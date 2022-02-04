@@ -1,6 +1,6 @@
 package main.by.library.dao.impl;
 
-import main.by.library.dao.GenericDAO;
+import main.by.library.dao.GenericDao;
 import main.by.library.dao.UserDao;
 import main.by.library.entity.*;
 import main.by.library.jdbs.ConnectionPoolImpl;
@@ -8,15 +8,19 @@ import main.by.library.jdbs.ConnectionPoolImpl;
 import java.sql.*;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
-public class UserDaoImpl extends GenericDAO<User> implements UserDao {
+public class UserDaoImpl extends GenericDao<User> implements UserDao {
 
     private static UserDaoImpl instance;
+    public static final String SQL_GET_COUNT_USER = "SELECT count(username) AS countRow FROM library.user";
     public static final String SQL_UPDATE_USER_DATA = "UPDATE library.user SET password = ?, first_name = ?,last_name = ?,phone_number = ?, email = ? WHERE username = ?";
     public static final String SQL_ADD_NEW_USER = "INSERT INTO library.user (username, password, role, first_name, last_name, phone_number, email) VALUES (?,?,?,?,?,?,?)";
-    public static final String SQL_FIND_ALL_USERS = "SELECT id, username,role, first_name, last_name, phone_number, email FROM library.user";
+    public static final String SQL_FIND_USER = "SELECT id, username,password, role, first_name, last_name, phone_number, email FROM library.user";
+    public static final String SQL_FIND_ALL_USERS = SQL_FIND_USER + " LIMIT 10 OFFSET ?";
     public static final String SQL_ADD_USER_IN_BLACK_LIST = "UPDATE library.user SET is_banned = TRUE WHERE username = (?);";
-    public static final String SQL_FIND_USER_BY_USERNAME = "SELECT id, username,password, role, first_name, last_name, phone_number, email FROM library.user WHERE username = (?)";
+    public static final String SQL_FIND_USER_BY_USERNAME = SQL_FIND_USER + " WHERE username = (?)";
+    public static final String SQL_FIND_USER_BY_ID = SQL_FIND_USER + " WHERE id = (?)";
 
     private UserDaoImpl() {
     }
@@ -35,40 +39,17 @@ public class UserDaoImpl extends GenericDAO<User> implements UserDao {
 
     @Override
     public User checkAuthentication(String username) {
-        User userForResult = null;
-        List<User> userByUsername = findUserByUsername(username);
-        for (User user : userByUsername) {
-            userForResult = new User(user.getUsername(), user.getPassword(), user.getRole(), user.getUserData());
-        }
-        return userForResult;
+        Optional<User> userByUsername = findUserByUsername(username);
+        return userByUsername.orElse(null);
     }
 
     @Override
-    protected User mapToEntityForGlobalSearch(ResultSet userSet) throws SQLException {
-        int userId = userSet.getInt("id");
-        return new User(
-                userId, userSet.getString("username"),
-                userSet.getString("role"),
-                new UserData(
-                        userSet.getString("first_name"),
-                        userSet.getString("last_name"),
-                        userSet.getString("phone_number"),
-                        userSet.getString("email")));
+    public int getCountUser() {
+        return getCountRow(ConnectionPoolImpl.getInstance().getConnection(), SQL_GET_COUNT_USER);
     }
 
     @Override
-    protected void setFieldToStatement(PreparedStatement userStatement, User user) throws SQLException {
-        userStatement.setString(1, user.getUsername());
-        userStatement.setString(2, user.getPassword());
-        userStatement.setString(3, user.getRole());
-        userStatement.setString(4, user.getUserData().getName());
-        userStatement.setString(5, user.getUserData().getSurname());
-        userStatement.setString(6, user.getUserData().getPhoneNumber());
-        userStatement.setString(7, user.getUserData().getEmailAddress());
-    }
-
-    @Override
-    protected User mapToEntityForSingleSearch(ResultSet userSet) throws SQLException {
+    protected User mapToEntity(ResultSet userSet) throws SQLException {
         int userId = userSet.getInt("id");
         return new User(
                 userId, userSet.getString("username"),
@@ -98,19 +79,35 @@ public class UserDaoImpl extends GenericDAO<User> implements UserDao {
     }
 
     @Override
-    public boolean AddNewUser(User user) {
-        return addNew(user, ConnectionPoolImpl.getInstance().getConnection(), SQL_ADD_NEW_USER);
-        //TODO commit rollback
+    public boolean addNewUser(User user) {
+        return addNewObject(user, ConnectionPoolImpl.getInstance().getConnection(), SQL_ADD_NEW_USER);
     }
 
     @Override
-    public List<User> findAllUsers() {
-        return findAll(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_ALL_USERS);
+    protected PreparedStatement setObjectsForAddMethod(PreparedStatement statement, User user) throws SQLException {
+        statement.setString(1, user.getUsername());
+        statement.setString(2, user.getPassword());
+        statement.setString(3, user.getRole());
+        statement.setString(4, user.getUserData().getName());
+        statement.setString(5, user.getUserData().getSurname());
+        statement.setString(6, user.getUserData().getPhoneNumber());
+        statement.setString(7, user.getUserData().getEmailAddress());
+        return statement;
     }
 
     @Override
-    public List<User> findUserByUsername(String username) {
-        return findEntityByYardstick(username, ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_USER_BY_USERNAME);
+    public List<User> findAllUsers(int offset) {
+        return findAll(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_ALL_USERS, offset);
+    }
+
+    @Override
+    public Optional<User> findUserById(int userId) {
+        return findEntityByParameter(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_USER_BY_ID, userId);
+    }
+
+    @Override
+    public Optional<User> findUserByUsername(String username) {
+        return findEntityByParameter(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_USER_BY_USERNAME, username);
     }
 
     @Override
