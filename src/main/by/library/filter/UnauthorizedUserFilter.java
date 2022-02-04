@@ -2,8 +2,7 @@ package main.by.library.filter;
 
 import main.by.library.controller.FrontController;
 import main.by.library.entity.User;
-import main.by.library.services.UserService;
-import main.by.library.services.impl.UserServiceImpl;
+import main.by.library.util.JSPUtil;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
@@ -12,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Objects;
 
-@WebFilter(urlPatterns = "/page/user/user.jsp")
+@WebFilter(urlPatterns = "/page/user/*")
 public class UnauthorizedUserFilter implements Filter {
 
     @Override
@@ -22,25 +21,26 @@ public class UnauthorizedUserFilter implements Filter {
             FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-        String username = (String) httpRequest.getSession().getAttribute(FrontController.SESSION_LOGGED_IN_ATTRIBUTE_NAME);
-        UserService userService = new UserServiceImpl();
-        User checkedUser = userService.checkAuthentication(username);
-        if (Objects.nonNull(checkedUser)) {
-            switch (checkedUser.getRole()) {
+        User user = (User) httpRequest.getSession().getAttribute(FrontController.USER_ATTRIBUTE);
+        if (Objects.nonNull(user)) {
+            switch (user.getRole()) {
                 case User.ROLE_ADMIN: {
-                    httpResponse.sendRedirect("/page/admin/admin.jsp");
+                    httpResponse.sendRedirect(httpRequest.getContextPath() + JSPUtil.getAdminJSPPath("admin"));
                     break;
                 }
                 case User.ROLE_USER: {
                     filterChain.doFilter(servletRequest, servletResponse);
                     break;
                 }
+                case User.ROLE_LIBRARIAN:{
+                    httpResponse.sendRedirect(httpRequest.getContextPath() + JSPUtil.getLibrarianJSPPath("librarian"));
+                    break;
+                }
                 default:
-                    //TODO librarian
                     break;
             }
         } else {
-            httpResponse.sendRedirect("/page/errorPage.jsp");
+            httpResponse.sendRedirect(JSPUtil.ERROR_PAGE);
         }
     }
 }
