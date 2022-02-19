@@ -3,16 +3,17 @@ package main.by.library.dao.impl;
 import main.by.library.dao.GenericDaoImpl;
 import main.by.library.dao.UserDao;
 import main.by.library.entity.*;
-import main.by.library.jdbs.ConnectionPoolImpl;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class UserDaoImplImpl extends GenericDaoImpl<User> implements UserDao {
+public class UserDaoImpl extends GenericDaoImpl<User> implements UserDao {
 
-    private static UserDaoImplImpl instance;
+    private static UserDaoImpl instance;
     public static final String SQL_GET_COUNT_USER = "SELECT count(username) AS countRow FROM library.user";
     public static final String SQL_UPDATE_USER_DATA = "UPDATE library.user SET username = ?, password = ?, first_name = ?,last_name = ?,phone_number = ?, email = ? WHERE id = ?";
     public static final String SQL_ADD_NEW_USER = "INSERT INTO library.user (username, password, role, first_name, last_name, phone_number, email) VALUES (?,?,?,?,?,?,?)";
@@ -23,25 +24,36 @@ public class UserDaoImplImpl extends GenericDaoImpl<User> implements UserDao {
     public static final String SQL_ADD_USER_IN_BLACK_LIST = "UPDATE library.user SET is_banned = TRUE WHERE username = (?);";
     public static final String SQL_FIND_USER_BY_USERNAME = SQL_FIND_ALL_USERS + " WHERE username = (?)";
     public static final String SQL_FIND_USER_BY_ID = SQL_FIND_ALL_USERS + " WHERE u.id = (?)";
+    public static final String SQL_DELETE_USER = "DELETE FROM library.user WHERE id = ?";
+    private static final Logger LOGGER = LogManager.getLogger(UserDaoImpl.class);
 
-    private UserDaoImplImpl() {
+    private UserDaoImpl() {
     }
 
-    public static UserDaoImplImpl getInstance() {
+    /**
+     * Returns instance if the object has already been created
+     * @return instance
+     */
+    public static UserDaoImpl getInstance() {
         if (instance == null) {
-            instance = new UserDaoImplImpl();
+            instance = new UserDaoImpl();
         }
         return instance;
     }
 
     @Override
     public boolean isUserExist(String username) {
-        return isExist(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_USER_BY_USERNAME, username);
+        return isExist(connectionPool.getConnection(), SQL_FIND_USER_BY_USERNAME, username);
     }
 
     @Override
-    public int getCountUser() {
-        return getCountRow(ConnectionPoolImpl.getInstance().getConnection(), SQL_GET_COUNT_USER);
+    public int getCount() {
+        return getCountRow(connectionPool.getConnection(), SQL_GET_COUNT_USER);
+    }
+
+    @Override
+    public boolean delete(User user) {
+        return deleteObjectById(connectionPool.getConnection(), SQL_DELETE_USER, user.getId());
     }
 
     @Override
@@ -59,8 +71,8 @@ public class UserDaoImplImpl extends GenericDaoImpl<User> implements UserDao {
     }
 
     @Override
-    public boolean updateUserData(User user) {
-        return updateObject(user, ConnectionPoolImpl.getInstance().getConnection(), SQL_UPDATE_USER_DATA);
+    public boolean update(User user) {
+        return updateObject(user, connectionPool.getConnection(), SQL_UPDATE_USER_DATA);
     }
 
     @Override
@@ -76,8 +88,8 @@ public class UserDaoImplImpl extends GenericDaoImpl<User> implements UserDao {
     }
 
     @Override
-    public boolean addNewUser(User user) {
-        return addNewObject(user, ConnectionPoolImpl.getInstance().getConnection(), SQL_ADD_NEW_USER);
+    public boolean addNew(User user) {
+        return addNewObject(user, connectionPool.getConnection(), SQL_ADD_NEW_USER);
     }
 
     @Override
@@ -93,45 +105,47 @@ public class UserDaoImplImpl extends GenericDaoImpl<User> implements UserDao {
     }
 
     @Override
-    public List<User> findAllUsers(int limit, int offset) {
-        return findAll(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_ALL_USERS_WITH_LIMIT_OFFSET, limit, offset);
+    public List<User> findAll(int limit, int offset) {
+        return findAll(connectionPool.getConnection(), SQL_FIND_ALL_USERS_WITH_LIMIT_OFFSET, limit, offset);
     }
 
     @Override
-    public Optional<User> findUserById(int userId) {
-        return findEntityByParameter(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_USER_BY_ID, userId);
+    public Optional<User> findById(int userId) {
+        return findEntityByParameter(connectionPool.getConnection(), SQL_FIND_USER_BY_ID, userId);
     }
 
     @Override
     public Optional<User> findUserByUsername(String username) {
-        return findEntityByParameter(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_USER_BY_USERNAME, username);
+        return findEntityByParameter(connectionPool.getConnection(), SQL_FIND_USER_BY_USERNAME, username);
     }
 
     @Override
     public boolean blockUser(User user) {
         boolean result = false;
         PreparedStatement userStatement = null;
-        Connection connection = ConnectionPoolImpl.getInstance().getConnection();
+        Connection connection = connectionPool.getConnection();
         if (Objects.nonNull(user)) {
             try {
                 connection.setAutoCommit(false);
-                connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+                connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
                 userStatement = connection.prepareStatement(SQL_ADD_USER_IN_BLACK_LIST);
                 userStatement.setString(1, user.getUsername());
                 result = userStatement.executeUpdate() == 1;
                 connection.commit();
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE, e);
                 rollbackConnection(connection);
             } finally {
                 closeStatement(userStatement);
-                release(connection);
+                closeConnection(connection);
             }
         }
         return result;
     }
 
+    @Override
     public List<User> findAllDebtors(int limit, int offset) {
-        return findAll(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_ALL_DEBTORS, limit, offset);
+        return findAll(connectionPool.getConnection(), SQL_FIND_ALL_DEBTORS, limit, offset);
     }
 }

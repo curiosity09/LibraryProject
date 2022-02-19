@@ -3,18 +3,10 @@ package main.by.library.dao;
 import main.by.library.entity.Order;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface OrderDao {
+public interface OrderDao extends GenericDao<Order> {
 
-    List<Order> findAllOrder(int offset);
+    List<Order> findOrderByUsername(String username, int limit, int offset);
 
-    boolean addOrder(Order order);
-
-    boolean deleteOrder(Order order);
-
-    int getCountOrder();
-
-    List<Order> findOrderByCustomerUsername(String username);
-
-    Order findOrderById(int orderId);
 }

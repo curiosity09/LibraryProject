@@ -4,25 +4,15 @@ import main.by.library.entity.Book;
 
 import java.util.List;
 
-public interface BookDao {
+public interface BookDao extends GenericDao<Book>{
 
-    Book findBookById(int bookId);
+    List<Book> findBookByName(String bookName, int limit, int offset);
 
-    List<Book> findBookByName(String bookName);
+    List<Book> findBookByAuthorFullName(String authorSurname, int limit, int offset);
 
-    List<Book> findAllBook(int offset);
+    List<Book> findBookByGenre(String genreName, int limit, int offset);
 
-    List<Book> findBookByAuthorFullName(String authorSurname);
+    List<Book> findBookBySection(String sectionName, int limit, int offset);
 
-    List<Book> findBookByGenre(String genreName);
-
-    List<Book> findBookBySection(String sectionName);
-
-    boolean addNewBook(Book book);
-
-    boolean updateBookData(Book book);
-
-    int getCountBook();
-
-    List<Book> getByOrderId(int id);
+    List<Book> getByOrderId(int id, int limit, int offset);
 }

@@ -1,7 +1,9 @@
 package main.by.library.dao;
 
 import main.by.library.jdbs.ConnectionPool;
-import main.by.library.jdbs.ConnectionPoolImpl;
+import main.by.library.util.LoggerUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -9,12 +11,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class GenericDao<T> {
+public abstract class GenericDaoImpl<T> implements LoggerUtil {
 
     protected ConnectionPool connectionPool;
+    private static final Logger LOGGER = LogManager.getLogger(GenericDaoImpl.class);
 
-    protected GenericDao() {
-        connectionPool = ConnectionPoolImpl.getInstance();
+    protected GenericDaoImpl() {
+        connectionPool = ConnectionPool.getInstance();
     }
 
     protected int getCountRow(Connection connection, String sqlQuery) {
@@ -23,20 +26,19 @@ public abstract class GenericDao<T> {
         ResultSet resultSet = null;
         try {
             connection.setAutoCommit(false);
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             statement = connection.createStatement();
             resultSet = statement.executeQuery(sqlQuery);
             while (resultSet.next()) {
                 result = resultSet.getInt("countRow");
                 connection.commit();
             }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE,e);
             rollbackConnection(connection);
         } finally {
+            closeConnection(connection);
             closeStatement(statement);
-            release(connection);
-            //TODO close connection or not?
             closeResultSet(resultSet);
         }
         return result;
@@ -48,7 +50,7 @@ public abstract class GenericDao<T> {
         ResultSet resultSet = null;
         try {
             connection.setAutoCommit(false);
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             statement = connection.prepareStatement(sqlQuery);
             statement.setInt(1, limit);
             statement.setInt(2, offset);
@@ -57,13 +59,12 @@ public abstract class GenericDao<T> {
                 list.add(mapToEntity(resultSet));
             }
             connection.commit();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE,e);
             rollbackConnection(connection);
         } finally {
+            closeConnection(connection);
             closeStatement(statement);
-            release(connection);
-            //TODO close connection or not?
             closeResultSet(resultSet);
         }
         return list;
@@ -75,18 +76,20 @@ public abstract class GenericDao<T> {
         int result = 0;
         if (Objects.nonNull(t)) {
             PreparedStatement statement = null;
+            ResultSet generatedKeys = null;
             try {
                 statement = connection.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
                 setObjectsForAddMethod(statement, t).executeUpdate();
-                ResultSet generatedKeys = statement.getGeneratedKeys();
+                generatedKeys = statement.getGeneratedKeys();
                 if (generatedKeys.next()) {
                     return generatedKeys.getInt("id");
                 }
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
+            } catch (SQLException e) {
+                LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE,e);
                 rollbackConnection(connection);
             } finally {
                 closeStatement(statement);
+                closeResultSet(generatedKeys);
             }
         }
         return result;
@@ -95,11 +98,10 @@ public abstract class GenericDao<T> {
     protected abstract PreparedStatement setObjectsForAddMethod(PreparedStatement statement, T t) throws SQLException;
 
     protected boolean addNewObject(T t, Connection connection, String sqlQuery) {
-        //TODO to come up with new normal name for add method
         boolean result = false;
         try {
             connection.setAutoCommit(false);
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             result = addNew(t, connection, sqlQuery) != 0;
             if (result) {
                 connection.commit();
@@ -107,10 +109,10 @@ public abstract class GenericDao<T> {
                 rollbackConnection(connection);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE, e);
             rollbackConnection(connection);
         } finally {
-            release(connection);
+            closeConnection(connection);
         }
         return result;
     }
@@ -121,19 +123,20 @@ public abstract class GenericDao<T> {
         ResultSet resultSet = null;
         try {
             connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             statement = connection.prepareStatement(sqlQuery);
             setParameter(statement, parameter);
             resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 result = Optional.of(mapToEntity(resultSet));
+                connection.commit();
             }
-            //TODO com  mit
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE, e);
         } finally {
             closeStatement(statement);
-            release(connection);
-            //TODO close resultSet
+            closeResultSet(resultSet);
+            closeConnection(connection);
         }
         return result;
     }
@@ -145,7 +148,7 @@ public abstract class GenericDao<T> {
         if (Objects.nonNull(parameter)) {
             try {
                 connection.setAutoCommit(false);
-                connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+                connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
                 statement = connection.prepareStatement(sqlQuery);
                 setParameter(statement, parameter);
                 statement.setInt(2, limit);
@@ -155,12 +158,12 @@ public abstract class GenericDao<T> {
                     list.add(mapToEntity(resultSet));
                 }
                 connection.commit();
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
+            } catch (SQLException e) {
+                LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE, e);
                 rollbackConnection(connection);
             } finally {
                 closeStatement(statement);
-                release(connection);
+                closeConnection(connection);
                 closeResultSet(resultSet);
             }
         }
@@ -182,40 +185,40 @@ public abstract class GenericDao<T> {
             try {
                 statement = connection.prepareStatement(sqlQuery);
                 connection.setAutoCommit(false);
-                connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+                connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
                 statement.setString(1, value);
                 resultSet = statement.executeQuery();
                 if (resultSet.next()) {
                     return true;
                 }
                 connection.commit();
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
+            } catch (SQLException e) {
+                LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE, e);
                 rollbackConnection(connection);
             } finally {
                 closeStatement(statement);
-                release(connection);
+                closeConnection(connection);
                 closeResultSet(resultSet);
             }
         }
         return false;
     }
 
-    public boolean updateObject(T t, Connection connection, String sqlQuery) {
+    protected boolean updateObject(T t, Connection connection, String sqlQuery) {
         PreparedStatement statement = null;
         try {
             connection.setAutoCommit(false);
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             statement = connection.prepareStatement(sqlQuery);
-            if(updateMapToTable(statement, t).executeUpdate() != 0){
+            if (updateMapToTable(statement, t).executeUpdate() != 0) {
                 connection.commit();
                 return true;
             }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE, e);
             rollbackConnection(connection);
         } finally {
-            release(connection);
+            closeConnection(connection);
             closeStatement(statement);
         }
         return false;
@@ -223,33 +226,24 @@ public abstract class GenericDao<T> {
 
     protected abstract PreparedStatement updateMapToTable(PreparedStatement statement, T t) throws SQLException;
 
-    public boolean deleteObjectById(Connection connection, String sqlQuery, int idObject) {
+    protected boolean deleteObjectById(Connection connection, String sqlQuery, int idObject) {
         boolean result = false;
         PreparedStatement statement = null;
         try {
             connection.setAutoCommit(false);
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             statement = connection.prepareStatement(sqlQuery);
             statement.setInt(1, idObject);
             result = statement.executeUpdate() != 0;
             connection.commit();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE, e);
             rollbackConnection(connection);
         } finally {
             closeStatement(statement);
-            release(connection);
+            closeConnection(connection);
         }
         return result;
-    }
-
-    protected void release(Connection connection) {
-        try {
-            connectionPool.releaseConnection(connection);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
     }
 
     protected void closeStatement(Statement statement) {
@@ -257,7 +251,7 @@ public abstract class GenericDao<T> {
             try {
                 statement.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE, e);
             }
         }
     }
@@ -267,7 +261,7 @@ public abstract class GenericDao<T> {
             try {
                 connection.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE, e);
             }
         }
     }
@@ -277,7 +271,7 @@ public abstract class GenericDao<T> {
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                e.printStackTrace();
+                LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE, e);
             }
         }
     }
@@ -287,9 +281,8 @@ public abstract class GenericDao<T> {
             try {
                 resultSet.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                LOGGER.error(DAO_METHODS_EXCEPTION_MESSAGE, e);
             }
         }
     }
 }
-

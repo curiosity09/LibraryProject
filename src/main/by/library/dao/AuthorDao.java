@@ -3,16 +3,12 @@ package main.by.library.dao;
 import main.by.library.entity.Author;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface AuthorDao {
+public interface AuthorDao extends GenericDao<Author> {
 
-    List<Author> findAllAuthor(int offset);
+    Optional<Author> findAuthorByFullName(String authorFullName);
 
-    boolean addNewAuthor(Author author);
+    boolean isAuthorExist(String authorName);
 
-    List<Author> findAuthorByFullName(String authorSurname);
-
-    boolean updateAuthor(Author author);
-
-    boolean deleteAuthor(Author author);
 }

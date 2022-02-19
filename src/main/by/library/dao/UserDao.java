@@ -5,23 +5,14 @@ import main.by.library.entity.User;
 import java.util.List;
 import java.util.Optional;
 
-public interface UserDao {
-
-    boolean addNewUser(User user);
-
-    int getCountUser();
-
-    List<User> findAllUsers(int offset);
+public interface UserDao extends GenericDao<User> {
 
     boolean blockUser(User user);
 
     Optional<User> findUserByUsername(String username);
 
-    Optional<User> findUserById(int userId);
+    boolean isUserExist(String username);
 
-    boolean isUserExist(String value);
+    List<User> findAllDebtors(int limit, int offset);
 
-    User checkAuthentication(String username);
-
-    boolean updateUserData(User user);
 }

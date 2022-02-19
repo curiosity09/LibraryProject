@@ -3,16 +3,11 @@ package main.by.library.dao;
 import main.by.library.entity.Section;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface SectionDao {
+public interface SectionDao extends GenericDao<Section> {
 
-    List<Section> findAllSection(int offset);
+    Optional<Section> findSectionByName(String sectionName);
 
-    boolean addNewSection(Section section);
-
-    List<Section> findSectionByName(String sectionName);
-
-    boolean updateSection(Section section);
-
-    boolean deleteSection(Section section);
+    boolean isSectionExist(String sectionName);
 }

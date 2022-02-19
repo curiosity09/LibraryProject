@@ -3,16 +3,11 @@ package main.by.library.dao;
 import main.by.library.entity.Genre;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface GenreDao {
+public interface GenreDao extends GenericDao<Genre>{
 
-    List<Genre> findAllGenre(int offset);
+    Optional<Genre> findGenreByName(String genreName);
 
-    boolean addNewGenre(Genre genre);
-
-    List<Genre> findGenreByName(String genreName);
-
-    boolean updateGenre(Genre genre);
-
-    boolean deleteGenre(Genre genre);
+    boolean isGenreExist(String genreName);
 }
