@@ -1,72 +1,100 @@
 package main.by.library.jdbs;
 
-import main.by.library.jdbs.ConnectionPool;
+import main.by.library.util.LoggerUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
-//release connection in genericDAO
-public class ConnectionPoolImpl {
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-    private static Queue<Connection> connectionPool;
-    private List<Connection> usedConnections = new ArrayList<>();
-    private static ConnectionPoolImpl instance;
-    private static final int INITIAL_POOL_SIZE = 10;
+public class ConnectionPool implements LoggerUtil {
+
+    private static ConnectionPool instance;
+    private static Queue<ProxyConnection> availableConnections = null;
     public static final String DB_URL_KEY = "db.url";
     public static final String DB_USERNAME_KEY = "db.username";
     public static final String DB_PASS_KEY = "db.pass";
+    public static final String DB_SIZE_KEY = "db.size";
+    private static final Lock lock = new ReentrantLock();
+    private static final AtomicBoolean flag = new AtomicBoolean();
+    private static final Logger LOGGER = LogManager.getLogger(ConnectionPool.class);
 
-    private ConnectionPoolImpl() {
+    static {
+        loadDriver();
+        initConnectionPool();
     }
 
-    public static ConnectionPoolImpl getInstance() {
-        if (instance == null) {
-            instance = create();
+    private ConnectionPool() {
+    }
+
+    /**
+     * Returns instance if the object has already been created
+     * @return instance
+     */
+    public static ConnectionPool getInstance() {
+        if (!flag.get()) {
+            lock.lock();
+            try {
+                if (instance == null) {
+                    instance = new ConnectionPool();
+                    flag.set(true);
+                }
+            } finally {
+                lock.unlock();
+            }
         }
         return instance;
     }
 
-    private static ConnectionPoolImpl create() {
+    private static void initConnectionPool() {
         try {
-            connectionPool = new ArrayBlockingQueue<>(INITIAL_POOL_SIZE);
-            for (int i = 0; i < INITIAL_POOL_SIZE; i++) {
-                connectionPool.add(createConnection(
-                        PropertiesManager.getPropertyByKey(DB_URL_KEY),
+            int poolSize = Integer.parseInt(PropertiesManager.getPropertyByKey(DB_SIZE_KEY));
+            availableConnections = new ArrayBlockingQueue<>(poolSize);
+            for (int i = 0; i < poolSize; i++) {
+                availableConnections.offer(createConnection());
+            }
+        } catch (SQLException e) {
+            LOGGER.error(INIT_CONNECTION_POOL_ERROR_MESSAGE, e);
+        }
+    }
+
+    private static void loadDriver() {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            LOGGER.error(ERROR_DURING_LOAD_DRIVER_MESSAGE, e);
+        }
+    }
+
+    private static ProxyConnection createConnection() throws SQLException {
+        return new ProxyConnection(
+                DriverManager.getConnection(PropertiesManager.getPropertyByKey(DB_URL_KEY),
                         PropertiesManager.getPropertyByKey(DB_USERNAME_KEY),
                         PropertiesManager.getPropertyByKey(DB_PASS_KEY)));
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        return new ConnectionPoolImpl();
     }
 
-    public Connection getConnection() {
-        Connection connection = connectionPool.poll();
-        usedConnections.add(connection);
-        return connection;
+    public ProxyConnection getConnection() {
+        LOGGER.info("Connection poll");
+        return availableConnections.poll();
     }
 
-    public boolean releaseConnection(Connection connection) throws SQLException {
-        if(!connection.getAutoCommit()){
+    public void releaseConnection(ProxyConnection connection) throws SQLException {
+        LOGGER.info(ENTER_METHOD_MESSAGE);
+        if (!connection.getAutoCommit()) {
             connection.setAutoCommit(true);
         }
-        connectionPool.add(connection);
-        return usedConnections.remove(connection);
+        LOGGER.info("Connection release");
+        availableConnections.offer(connection);
     }
 
-    private static Connection createConnection(String url, String user, String password) throws SQLException {
-        return DriverManager.getConnection(url, user, password);
-    }
-
-    public int getSizeUnused() {
-        return connectionPool.size() ;
-    }
-    public int getSizeUsed() {
-        return  usedConnections.size();
+    public void destroy() throws SQLException {
+        for (ProxyConnection connection : availableConnections) {
+            connection.closeConnection();
+        }
     }
 }
