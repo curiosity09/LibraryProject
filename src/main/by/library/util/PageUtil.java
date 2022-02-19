@@ -1,0 +1,58 @@
+package main.by.library.util;
+
+public interface PageUtil {
+
+    String USER_ATTRIBUTE = "user";
+    String SHOPPING_CART_ATTRIBUTE = "shoppingCart";
+    String BOOKS_ATTRIBUTE = "books";
+    String OFFSET_LIST_ATTRIBUTE = "offsetList";
+    String OFFSET_PARAMETER = "offset";
+    String LIMIT_PARAMETER = "limit";
+    String ALL_USERS_ATTRIBUTE = "users";
+    String ALL_ORDERS_ATTRIBUTE = "orders";
+    String DATE_TIME_NOW_ATTRIBUTE = "dateTimeNow";
+    String DEBTORS_ATTRIBUTE = "debtors";
+    String LIBRARIAN_PAGE = "librarian";
+    String USER_PAGE = "user";
+    String ADD_BOOK_PAGE = "addBook";
+    String AUTHOR_PARAMETER = "authorFullName";
+    String GENRE_PARAMETER = "genre";
+    String SECTION_PARAMETER = "section";
+    String RENTAL_PERIOD_PARAMETER = "rentalPeriod";
+    String BOOK_ID_PARAMETER = "bookId";
+    String REFERER_HEADER = "Referer";
+    String USERNAME_PARAMETER = "username";
+    String BLOCK_USER_PAGE = "blockUser";
+    String ADMIN_PAGE = "admin";
+    String LANGUAGE_ATTRIBUTE = "language";
+    String LANGUAGE_PARAMETER = "lang";
+    String SHOPPING_CART_PAGE = "shoppingCart";
+    String EDIT_BOOK_PAGE = "editBook";
+    String SHOW_ALL_BOOKS_COMMAND = "showAllBooks";
+    String FIND_USER_ORDER_PAGE = "findUserOrder";
+    String USER_ORDER_PAGE = "userOrder";
+    String USERS_ORDER_ATTRIBUTE = "usersOrder";
+    String ORDER_ID_PARAMETER = "orderId";
+    String AMPERSAND = "&";
+    String EQUAL_SIGH = "=";
+    String ALL_ORDERS_PAGE = "allOrders";
+    String ALL_USERS_PAGE = "allUsers";
+    String USER_INFO_PAGE = "userInfo";
+    String AUTHORS_ATTRIBUTE = "authors";
+    String GENRES_ATTRIBUTE = "genres";
+    String SECTIONS_ATTRIBUTE = "sections";
+    String COMMAND_PARAMETER = "command";
+    String PASSWORD_PARAMETER = "password";
+    String ROLE_PARAMETER = "role";
+    String NAME_PARAMETER = "name";
+    String SURNAME_PARAMETER = "surname";
+    String PHONE_PARAMETER = "phone";
+    String EMAIL_PARAMETER = "email";
+    String ALL_BOOKS_PAGE = "allBooks";
+    String BOOK_NAME_PARAMETER = "bookName";
+    String QUANTITY_PARAMETER = "quantity";
+    String YEAR_PARAMETER = "year";
+    int OFFSET_ZERO = 0;
+    int ONE_BOOK = 1;
+    int LIMIT_TEN = 10;
+}
