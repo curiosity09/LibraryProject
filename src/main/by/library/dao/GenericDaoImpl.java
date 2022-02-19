@@ -42,7 +42,7 @@ public abstract class GenericDao<T> {
         return result;
     }
 
-    protected List<T> findAll(Connection connection, String sqlQuery, int offset) {
+    protected List<T> findAll(Connection connection, String sqlQuery, int limit, int offset) {
         List<T> list = new ArrayList<>();
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -50,7 +50,8 @@ public abstract class GenericDao<T> {
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             statement = connection.prepareStatement(sqlQuery);
-            statement.setInt(1, offset);
+            statement.setInt(1, limit);
+            statement.setInt(2, offset);
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 list.add(mapToEntity(resultSet));
@@ -78,8 +79,8 @@ public abstract class GenericDao<T> {
                 statement = connection.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
                 setObjectsForAddMethod(statement, t).executeUpdate();
                 ResultSet generatedKeys = statement.getGeneratedKeys();
-                if(generatedKeys.next()){
-                   return generatedKeys.getInt("id");
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt("id");
                 }
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
@@ -99,7 +100,7 @@ public abstract class GenericDao<T> {
         try {
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-            result = addNew(t, connection, sqlQuery)!=0;
+            result = addNew(t, connection, sqlQuery) != 0;
             if (result) {
                 connection.commit();
             } else {
@@ -137,7 +138,7 @@ public abstract class GenericDao<T> {
         return result;
     }
 
-    protected List<T> findAllByParameter(Object parameter, Connection connection, String sqlQuery) {
+    protected List<T> findAllByParameter(Object parameter, int limit, int offset, Connection connection, String sqlQuery) {
         List<T> list = new ArrayList<>();
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -147,6 +148,8 @@ public abstract class GenericDao<T> {
                 connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
                 statement = connection.prepareStatement(sqlQuery);
                 setParameter(statement, parameter);
+                statement.setInt(2, limit);
+                statement.setInt(3, offset);
                 resultSet = statement.executeQuery();
                 while (resultSet.next()) {
                     list.add(mapToEntity(resultSet));
@@ -204,7 +207,10 @@ public abstract class GenericDao<T> {
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             statement = connection.prepareStatement(sqlQuery);
-            return updateMapToTable(statement, t).executeUpdate() == 1;
+            if(updateMapToTable(statement, t).executeUpdate() != 0){
+                connection.commit();
+                return true;
+            }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             rollbackConnection(connection);
@@ -225,7 +231,7 @@ public abstract class GenericDao<T> {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             statement = connection.prepareStatement(sqlQuery);
             statement.setInt(1, idObject);
-            result = statement.executeUpdate() == 1;
+            result = statement.executeUpdate() != 0;
             connection.commit();
         } catch (SQLException throwables) {
             throwables.printStackTrace();

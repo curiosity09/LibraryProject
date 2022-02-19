@@ -1,6 +1,6 @@
 package main.by.library.dao.impl;
 
-import main.by.library.dao.GenericDao;
+import main.by.library.dao.GenericDaoImpl;
 import main.by.library.dao.UserDao;
 import main.by.library.entity.*;
 import main.by.library.jdbs.ConnectionPoolImpl;
@@ -10,37 +10,33 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class UserDaoImpl extends GenericDao<User> implements UserDao {
+public class UserDaoImplImpl extends GenericDaoImpl<User> implements UserDao {
 
-    private static UserDaoImpl instance;
+    private static UserDaoImplImpl instance;
     public static final String SQL_GET_COUNT_USER = "SELECT count(username) AS countRow FROM library.user";
-    public static final String SQL_UPDATE_USER_DATA = "UPDATE library.user SET password = ?, first_name = ?,last_name = ?,phone_number = ?, email = ? WHERE username = ?";
+    public static final String SQL_UPDATE_USER_DATA = "UPDATE library.user SET username = ?, password = ?, first_name = ?,last_name = ?,phone_number = ?, email = ? WHERE id = ?";
     public static final String SQL_ADD_NEW_USER = "INSERT INTO library.user (username, password, role, first_name, last_name, phone_number, email) VALUES (?,?,?,?,?,?,?)";
-    public static final String SQL_FIND_USER = "SELECT id, username,password, role, first_name, last_name, phone_number, email FROM library.user";
-    public static final String SQL_FIND_ALL_USERS = SQL_FIND_USER + " LIMIT 10 OFFSET ?";
+    public static final String SQL_FIND_ALL_USERS = "SELECT u.id AS id, username,password, role, first_name, last_name, phone_number, email, is_banned FROM library.user u";
+    public static final String SQL_LIMIT_OFFSET = " ORDER BY id LIMIT ? OFFSET ?";
+    public static final String SQL_FIND_ALL_DEBTORS = "SELECT DISTINCT u.id AS id, username,password, role, first_name, last_name, phone_number, email, is_banned FROM library.user u JOIN library.order_card oc ON u.id = oc.reader_id WHERE rental_period<=CURRENT_TIMESTAMP AT TIME ZONE 'Europe/Minsk' AND is_banned = FALSE" + SQL_LIMIT_OFFSET;
+    public static final String SQL_FIND_ALL_USERS_WITH_LIMIT_OFFSET = SQL_FIND_ALL_USERS + SQL_LIMIT_OFFSET;
     public static final String SQL_ADD_USER_IN_BLACK_LIST = "UPDATE library.user SET is_banned = TRUE WHERE username = (?);";
-    public static final String SQL_FIND_USER_BY_USERNAME = SQL_FIND_USER + " WHERE username = (?)";
-    public static final String SQL_FIND_USER_BY_ID = SQL_FIND_USER + " WHERE id = (?)";
+    public static final String SQL_FIND_USER_BY_USERNAME = SQL_FIND_ALL_USERS + " WHERE username = (?)";
+    public static final String SQL_FIND_USER_BY_ID = SQL_FIND_ALL_USERS + " WHERE u.id = (?)";
 
-    private UserDaoImpl() {
+    private UserDaoImplImpl() {
     }
 
-    public static UserDaoImpl getInstance() {
+    public static UserDaoImplImpl getInstance() {
         if (instance == null) {
-            instance = new UserDaoImpl();
+            instance = new UserDaoImplImpl();
         }
         return instance;
     }
 
     @Override
-    public boolean isUserExist(String value) {
-        return isExist(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_USER_BY_USERNAME, value);
-    }
-
-    @Override
-    public User checkAuthentication(String username) {
-        Optional<User> userByUsername = findUserByUsername(username);
-        return userByUsername.orElse(null);
+    public boolean isUserExist(String username) {
+        return isExist(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_USER_BY_USERNAME, username);
     }
 
     @Override
@@ -50,16 +46,16 @@ public class UserDaoImpl extends GenericDao<User> implements UserDao {
 
     @Override
     protected User mapToEntity(ResultSet userSet) throws SQLException {
-        int userId = userSet.getInt("id");
-        return new User(
-                userId, userSet.getString("username"),
-                userSet.getString("password"),
-                userSet.getString("role"),
-                new UserData(
-                        userSet.getString("first_name"),
-                        userSet.getString("last_name"),
-                        userSet.getString("phone_number"),
-                        userSet.getString("email")));
+        return User.builder().id(userSet.getInt("id"))
+                .username(userSet.getString("username"))
+                .password(userSet.getString("password"))
+                .role(userSet.getString("role"))
+                .userData(UserData.builder()
+                        .name(userSet.getString("first_name"))
+                        .surname(userSet.getString("last_name"))
+                        .phoneNumber(userSet.getString("phone_number"))
+                        .emailAddress(userSet.getString("email")).build())
+                .isBanned(userSet.getBoolean("is_banned")).build();
     }
 
     @Override
@@ -69,12 +65,13 @@ public class UserDaoImpl extends GenericDao<User> implements UserDao {
 
     @Override
     protected PreparedStatement updateMapToTable(PreparedStatement statement, User user) throws SQLException {
-        statement.setString(1, user.getPassword());
-        statement.setString(2, user.getUserData().getName());
-        statement.setString(3, user.getUserData().getSurname());
-        statement.setString(4, user.getUserData().getPhoneNumber());
-        statement.setString(5, user.getUserData().getEmailAddress());
-        statement.setString(6, user.getUsername());
+        statement.setString(1, user.getUsername());
+        statement.setString(2, user.getPassword());
+        statement.setString(3, user.getUserData().getName());
+        statement.setString(4, user.getUserData().getSurname());
+        statement.setString(5, user.getUserData().getPhoneNumber());
+        statement.setString(6, user.getUserData().getEmailAddress());
+        statement.setInt(7, user.getId());
         return statement;
     }
 
@@ -96,8 +93,8 @@ public class UserDaoImpl extends GenericDao<User> implements UserDao {
     }
 
     @Override
-    public List<User> findAllUsers(int offset) {
-        return findAll(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_ALL_USERS, offset);
+    public List<User> findAllUsers(int limit, int offset) {
+        return findAll(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_ALL_USERS_WITH_LIMIT_OFFSET, limit, offset);
     }
 
     @Override
@@ -132,5 +129,9 @@ public class UserDaoImpl extends GenericDao<User> implements UserDao {
             }
         }
         return result;
+    }
+
+    public List<User> findAllDebtors(int limit, int offset) {
+        return findAll(ConnectionPoolImpl.getInstance().getConnection(), SQL_FIND_ALL_DEBTORS, limit, offset);
     }
 }

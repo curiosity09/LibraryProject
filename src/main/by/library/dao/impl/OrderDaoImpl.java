@@ -1,7 +1,7 @@
 package main.by.library.dao.impl;
 
 import main.by.library.dao.BookDao;
-import main.by.library.dao.GenericDao;
+import main.by.library.dao.GenericDaoImpl;
 import main.by.library.dao.OrderDao;
 import main.by.library.dao.UserDao;
 import main.by.library.entity.*;
@@ -13,25 +13,29 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class OrderDaoImpl extends GenericDao<Order> implements OrderDao {
+public class OrderDaoImplImpl extends GenericDaoImpl<Order> implements OrderDao {
 
-    private static OrderDaoImpl instance;
+    public static final int OFFSET_ZERO = 0;
+    private static OrderDaoImplImpl instance;
     public static final String SQL_GET_COUNT_ORDER = "SELECT count(id) AS countRow FROM library.order_card";
+    public static final String SQL_WHERE_USERNAME_PREDICATE = " WHERE username = ?";
+    public static final String SQL_GET_COUNT_ORDER_BY_USER = SQL_GET_COUNT_ORDER + SQL_WHERE_USERNAME_PREDICATE;
     public static final String SQL_GET_ALL_ORDER = "SELECT o.id AS order_id, reader_id, username, rental_time,  rental_period FROM library.order_card o JOIN library.user u ON o.reader_id = u.id";
-    public static final String SQL_LIMIT_OFFSET = " LIMIT 10 OFFSET ?";
+    public static final String SQL_LIMIT_OFFSET = " ORDER BY o.id LIMIT ? OFFSET ?";
     public static final String SQL_GET_ALL_ORDER_WITH_LIMIT_OFFSET = SQL_GET_ALL_ORDER + SQL_LIMIT_OFFSET;
     public static final String SQL_GET_ORDER_BY_ID = SQL_GET_ALL_ORDER + " WHERE o.id = ?";
-    public static final String SQL_GET_ALL_ORDER_BY_CUSTOMER_USERNAME = SQL_GET_ALL_ORDER + " WHERE username = ?";
+    public static final String SQL_GET_ALL_ORDER_BY_USERNAME = SQL_GET_ALL_ORDER + SQL_WHERE_USERNAME_PREDICATE + SQL_LIMIT_OFFSET;
     public static final String SQL_ADD_ORDER = "INSERT INTO library.order_card (reader_id, rental_time, rental_period) VALUES ((SELECT id FROM library.user WHERE username = ?), ?, ?)";
     public static final String SQL_ADD_BOOK_IN_ORDER = "INSERT INTO library.order_book (order_id, book_id) VALUES (?,?)";
-    public static final String SQL_DELETE_ORDER = "DELETE FROM library.order_card WHERE id = (?)";
+    public static final String SQL_DELETE_FROM_ORDER_BOOK = "DELETE FROM library.order_book WHERE order_id = ?";
+    public static final String SQL_DELETE_FROM_ORDER_CARD = "DELETE FROM library.order_card WHERE id = ?";
 
-    private OrderDaoImpl() {
+    private OrderDaoImplImpl() {
     }
 
-    public static OrderDaoImpl getInstance() {
+    public static OrderDaoImplImpl getInstance() {
         if (instance == null) {
-            instance = new OrderDaoImpl();
+            instance = new OrderDaoImplImpl();
         }
         return instance;
     }
@@ -50,29 +54,27 @@ public class OrderDaoImpl extends GenericDao<Order> implements OrderDao {
     }
 
     @Override
-    public List<Order> findOrderByCustomerUsername(String username) {
-        return findAllByParameter(username, ConnectionPoolImpl.getInstance().getConnection(), SQL_GET_ALL_ORDER_BY_CUSTOMER_USERNAME);
+    public List<Order> findOrderByUsername(String username, int limit, int offset) {
+        return findAllByParameter(username, limit, offset, ConnectionPoolImpl.getInstance().getConnection(), SQL_GET_ALL_ORDER_BY_USERNAME);
     }
 
     @Override
-    public List<Order> findAllOrder(int offset) {
-        return findAll(ConnectionPoolImpl.getInstance().getConnection(), SQL_GET_ALL_ORDER_WITH_LIMIT_OFFSET, offset);
+    public List<Order> findAllOrder(int limit, int offset) {
+        return findAll(ConnectionPoolImpl.getInstance().getConnection(), SQL_GET_ALL_ORDER_WITH_LIMIT_OFFSET, limit, offset);
     }
 
     @Override
-    public Order findOrderById(int orderId) {
-        Optional<Order> orderOptional = findEntityByParameter(ConnectionPoolImpl.getInstance().getConnection(), SQL_GET_ORDER_BY_ID, orderId);
-        return orderOptional.orElseGet(Order::new);
-        //TODO Optional
+    public Optional<Order> findOrderById(int orderId) {
+        return findEntityByParameter(ConnectionPoolImpl.getInstance().getConnection(), SQL_GET_ORDER_BY_ID, orderId);
     }
 
     @Override
     protected Order mapToEntity(ResultSet orderSet) throws SQLException {
         int orderId = orderSet.getInt("order_id");
-        BookDao bookDao = BookDaoImpl.getInstance();
-        UserDao userDao = UserDaoImpl.getInstance();
+        BookDao bookDao = BookDaoImplImpl.getInstance();
+        UserDao userDao = UserDaoImplImpl.getInstance();
         Optional<User> userOptional = userDao.findUserById(orderSet.getInt("reader_id"));
-        List<Book> bookList = bookDao.getByOrderId(orderSet.getInt("order_id"));
+        List<Book> bookList = bookDao.getByOrderId(orderSet.getInt("order_id"), 10, OFFSET_ZERO);
         return new Order(orderId, bookList, userOptional.orElse(null), orderSet.getObject("rental_time", LocalDateTime.class),
                 orderSet.getObject("rental_period", LocalDateTime.class));
     }
@@ -85,7 +87,7 @@ public class OrderDaoImpl extends GenericDao<Order> implements OrderDao {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             order.setId(addNew(order, connection, SQL_ADD_ORDER));
             boolean addBookResult = addBookInCurrentOrder(order, connection);
-            if (order.getId()!=0 && addBookResult) {
+            if (order.getId() != 0 && addBookResult) {
                 connection.commit();
                 return true;
             } else {
@@ -136,8 +138,42 @@ public class OrderDaoImpl extends GenericDao<Order> implements OrderDao {
     }
 
     @Override
-    public boolean deleteOrder(Order order) {
-        return deleteObjectById(ConnectionPoolImpl.getInstance().getConnection(), SQL_DELETE_ORDER, order.getId());
+    public boolean deleteOrder(int orderId) {
+        Connection connection = ConnectionPoolImpl.getInstance().getConnection();
+        try {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            boolean delFromOrderBook = deleteOrderById(connection, SQL_DELETE_FROM_ORDER_BOOK, orderId);
+            boolean delFromOrderCard = deleteOrderById(connection, SQL_DELETE_FROM_ORDER_CARD, orderId);
+            if(delFromOrderBook&&delFromOrderCard){
+                connection.commit();
+                return true;
+            }else {
+                rollbackConnection(connection);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            rollbackConnection(connection);
+        }finally {
+            release(connection);
+        }
+        return false;
+    }
+
+    private boolean deleteOrderById(Connection connection, String sqlQuery, int idObject) {
+        boolean result = false;
+        PreparedStatement statement = null;
+        try {
+            statement = connection.prepareStatement(sqlQuery);
+            statement.setInt(1, idObject);
+            result = statement.executeUpdate() != 0;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            rollbackConnection(connection);
+        } finally {
+            closeStatement(statement);
+        }
+        return result;
     }
 }
 
