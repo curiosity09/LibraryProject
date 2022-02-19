@@ -1,8 +1,9 @@
 package main.by.library.filter;
 
-import main.by.library.controller.FrontController;
+import main.by.library.command.Command;
 import main.by.library.entity.User;
 import main.by.library.util.JSPUtil;
+import main.by.library.util.PageUtil;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
@@ -11,8 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Objects;
 
-@WebFilter(urlPatterns = "/page/user/*")
-public class UnauthorizedUserFilter implements Filter {
+@WebFilter(urlPatterns = {"/page/user/*"})
+public class UnauthorizedUserFilter implements Filter,PageUtil {
 
     @Override
     public void doFilter(
@@ -21,23 +22,27 @@ public class UnauthorizedUserFilter implements Filter {
             FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-        User user = (User) httpRequest.getSession().getAttribute(FrontController.USER_ATTRIBUTE);
+        User user = (User) httpRequest.getSession().getAttribute(USER_ATTRIBUTE);
         if (Objects.nonNull(user)) {
-            switch (user.getRole()) {
-                case User.ROLE_ADMIN: {
-                    httpResponse.sendRedirect(httpRequest.getContextPath() + JSPUtil.getAdminJSPPath("admin"));
-                    break;
+            if (!user.isBanned()) {
+                switch (user.getRole()) {
+                    case User.ROLE_ADMIN: {
+                        httpResponse.sendRedirect(httpRequest.getContextPath() + JSPUtil.getAdminJSPPath(ADMIN_PAGE));
+                        break;
+                    }
+                    case User.ROLE_USER: {
+                        filterChain.doFilter(servletRequest, servletResponse);
+                        break;
+                    }
+                    case User.ROLE_LIBRARIAN: {
+                        httpResponse.sendRedirect(httpRequest.getContextPath() + JSPUtil.getLibrarianJSPPath(LIBRARIAN_PAGE));
+                        break;
+                    }
+                    default:
+                        break;
                 }
-                case User.ROLE_USER: {
-                    filterChain.doFilter(servletRequest, servletResponse);
-                    break;
-                }
-                case User.ROLE_LIBRARIAN:{
-                    httpResponse.sendRedirect(httpRequest.getContextPath() + JSPUtil.getLibrarianJSPPath("librarian"));
-                    break;
-                }
-                default:
-                    break;
+            } else {
+                httpResponse.sendRedirect(JSPUtil.BAN_PAGE);
             }
         } else {
             httpResponse.sendRedirect(JSPUtil.ERROR_PAGE);

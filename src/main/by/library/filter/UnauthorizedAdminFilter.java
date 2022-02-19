@@ -1,9 +1,8 @@
 package main.by.library.filter;
 
-
-import main.by.library.controller.FrontController;
 import main.by.library.entity.User;
 import main.by.library.util.JSPUtil;
+import main.by.library.util.PageUtil;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
@@ -13,7 +12,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 @WebFilter(urlPatterns = "/page/admin/*")
-public class UnauthorizedAdminFilter implements Filter {
+public class UnauthorizedAdminFilter implements Filter, PageUtil {
 
     @Override
     public void doFilter(
@@ -22,7 +21,7 @@ public class UnauthorizedAdminFilter implements Filter {
             FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-        User user = (User) httpRequest.getSession().getAttribute(FrontController.USER_ATTRIBUTE);
+        User user = (User) httpRequest.getSession().getAttribute(USER_ATTRIBUTE);
         if (Objects.nonNull(user)) {
             switch (user.getRole()) {
                 case User.ROLE_ADMIN: {
@@ -30,11 +29,11 @@ public class UnauthorizedAdminFilter implements Filter {
                     break;
                 }
                 case User.ROLE_USER: {
-                    httpResponse.sendRedirect(JSPUtil.getUserJSPPath("user"));
+                    httpResponse.sendRedirect(JSPUtil.getUserJSPPath(USER_PAGE));
                     break;
                 }
-                case User.ROLE_LIBRARIAN:{
-                    httpResponse.sendRedirect(JSPUtil.getLibrarianJSPPath("librarian"));
+                case User.ROLE_LIBRARIAN: {
+                    httpResponse.sendRedirect(JSPUtil.getLibrarianJSPPath(LIBRARIAN_PAGE));
                     break;
                 }
                 default:
