@@ -6,13 +6,32 @@ public class Section implements Serializable {
     private int id;
     private String name;
 
-    public Section(String name) {
-        this.name = name;
-    }
-
     public Section(int id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private int id;
+        private String name;
+
+        public Builder id(int id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Section build() {
+            return new Section(id, name);
+        }
     }
 
     @Override

@@ -14,41 +14,60 @@ public class User implements Serializable {
     public static final String ROLE_LIBRARIAN = "librarian";
     public static final String ROLE_USER = "user";
 
-    public User(String username, String password, String role) {
-        this.username = username;
-        this.password = password;
-        this.role = role;
-    }
-
-    public User(int id,String username, String role, UserData userData) {
-        this.id = id;
-        this.username = username;
-        this.role = role;
-        this.userData = userData;
-    }
-
-    public User(int id, String username, String password, String role, UserData userData) {
+    public User(int id, String username, String password, String role, UserData userData, boolean isBanned) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.role = role;
         this.userData = userData;
+        this.isBanned = isBanned;
     }
 
-    public User(String username, String password, String role, UserData userData) {
-        this.username = username;
-        this.password = password;
-        this.role = role;
-        this.userData = userData;
+    public static Builder builder(){
+        return new Builder();
     }
 
-    public User(String username, UserData userData) {
-        this.username = username;
-        this.userData = userData;
-    }
+    public static class Builder {
+        private int id;
+        private String username;
+        private String password;
+        private String role;
+        private UserData userData;
+        private boolean isBanned;
 
-    public User(String username) {
-        this.username = username;
+        public Builder id(int id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder username(String username) {
+            this.username = username;
+            return this;
+        }
+
+        public Builder password(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public Builder role(String role) {
+            this.role = role;
+            return this;
+        }
+
+        public Builder userData(UserData userData) {
+            this.userData = userData;
+            return this;
+        }
+
+        public Builder isBanned(boolean isBanned) {
+            this.isBanned = isBanned;
+            return this;
+        }
+
+        public User build(){
+            return new User(id,username,password,role,userData,isBanned);
+        }
     }
 
     @Override

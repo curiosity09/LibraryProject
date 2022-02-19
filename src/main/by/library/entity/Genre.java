@@ -7,13 +7,32 @@ public class Genre implements Serializable {
     private int id;
     private String name;
 
-    public Genre(String name) {
-        this.name = name;
-    }
-
     public Genre(int id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public static Builder builder(){
+        return new Builder();
+    }
+
+    public static class Builder {
+        private int id;
+        private String name;
+
+        public Builder id(int id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Genre build(){
+            return new Genre(id,name);
+        }
     }
 
     @Override

@@ -12,8 +12,27 @@ public class Author implements Serializable {
         this.fullName = fullName;
     }
 
-    public Author(String fullName) {
-        this.fullName = fullName;
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private int id;
+        private String fullName;
+
+        public Builder id(int id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder name(String fullName) {
+            this.fullName = fullName;
+            return this;
+        }
+
+        public Author build() {
+            return new Author(id, fullName);
+        }
     }
 
     @Override

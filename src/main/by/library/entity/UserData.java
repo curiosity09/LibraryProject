@@ -16,9 +16,39 @@ public class UserData implements Serializable {
         this.emailAddress = emailAddress;
     }
 
-    public UserData(String name, String surname) {
-        this.name = name;
-        this.surname = surname;
+    public static Builder builder(){
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String name;
+        private String surname;
+        private String phoneNumber;
+        private String emailAddress;
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder surname(String surname) {
+            this.surname = surname;
+            return this;
+        }
+
+        public Builder phoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public Builder emailAddress(String emailAddress) {
+            this.emailAddress = emailAddress;
+            return this;
+        }
+
+        public UserData build() {
+           return new UserData(name, surname, phoneNumber, emailAddress);
+        }
     }
 
     @Override

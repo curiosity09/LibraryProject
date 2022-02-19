@@ -11,46 +11,6 @@ public class Book implements Serializable {
     private int quantity;
     private int publicationYear;
 
-    public Book(String name, Author author, Genre genre, int publicationYear) {
-        this.name = name;
-        this.author = author;
-        this.genre = genre;
-        this.publicationYear = publicationYear;
-    }
-
-    public Book(int id) {
-        this.id = id;
-    }
-
-    public Book(int id, String name, Author author, int publicationYear) {
-        this.id = id;
-        this.name = name;
-        this.author = author;
-        this.publicationYear = publicationYear;
-    }
-
-    public Book(String name, Author author, int publicationYear) {
-        this.name = name;
-        this.author = author;
-        this.publicationYear = publicationYear;
-    }
-
-    public Book(String name, Author author, int publicationYear, int quantity) {
-        this.name = name;
-        this.author = author;
-        this.publicationYear = publicationYear;
-        this.quantity = quantity;
-    }
-
-    public Book(String name, Author author, Genre genre, Section section, int quantity, int publicationYear) {
-        this.name = name;
-        this.author = author;
-        this.genre = genre;
-        this.section = section;
-        this.quantity = quantity;
-        this.publicationYear = publicationYear;
-    }
-
     public Book(int id, String name, Author author, Genre genre, Section section, int quantity, int publicationYear) {
         this.id = id;
         this.name = name;
@@ -61,7 +21,58 @@ public class Book implements Serializable {
         this.publicationYear = publicationYear;
     }
 
-    public Book() {}
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private int id;
+        private String name;
+        private Author author;
+        private Genre genre;
+        private Section section;
+        private int quantity;
+        private int publicationYear;
+
+        public Builder id(int id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder author(Author author) {
+            this.author = author;
+            return this;
+        }
+
+        public Builder genre(Genre genre) {
+            this.genre = genre;
+            return this;
+        }
+
+        public Builder section(Section section) {
+            this.section = section;
+            return this;
+        }
+
+        public Builder quantity(int quantity) {
+            this.quantity = quantity;
+            return this;
+        }
+
+        public Builder publicationYear(int publicationYear) {
+            this.publicationYear = publicationYear;
+            return this;
+        }
+
+        public Book build() {
+            return new Book(id, name, author, genre, section, quantity, publicationYear);
+        }
+    }
 
     @Override
     public boolean equals(Object o) {
