@@ -1,27 +1,35 @@
 package main.by.library.jdbs;
 
+import main.by.library.util.LoggerUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Properties;
 
-public final class PropertiesManager {
+public final class PropertiesManager implements LoggerUtil {
 
-    private PropertiesManager(){
+    private static final Properties properties = new Properties();
+    private static final Logger LOGGER = LogManager.getLogger(PropertiesManager.class);
+
+    private PropertiesManager() {
         throw new UnsupportedOperationException();
     }
 
-    private static final Properties properties = new Properties();
-
     static {
         try {
-            properties.load(Files.newInputStream(Path.of("resources", "db.properties")));
+            properties.load(PropertiesManager.class.getClassLoader().getResourceAsStream("db.properties"));
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(ERROR_DURING_PROPERTIES_LOADING_MESSAGE, e);
         }
     }
 
-    public static String getPropertyByKey(String key){
+    /**
+     * Returns properties by the entered key
+     * @param key String
+     * @return properties String
+     */
+    public static String getPropertyByKey(String key) {
         return properties.getProperty(key);
     }
 }
