@@ -6,6 +6,7 @@ import main.by.library.entity.Order;
 import main.by.library.services.OrderService;
 
 import java.util.List;
+import java.util.Optional;
 
 public class OrderServiceImpl implements OrderService {
 
@@ -16,27 +17,32 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> findAllOrder(int offset) {
-        return orderDao.findAllOrder(offset);
+    public List<Order> findAllOrder(int limit,int offset) {
+        return orderDao.findAll(limit, offset);
     }
 
     @Override
     public boolean addOrder(Order order) {
-        return orderDao.addOrder(order);
+        return orderDao.addNew(order);
     }
 
     @Override
     public boolean deleteOrder(Order order) {
-        return orderDao.deleteOrder(order);
+        return orderDao.delete(order);
     }
 
     @Override
     public int getCountOrder() {
-        return orderDao.getCountOrder();
+        return orderDao.getCount();
     }
 
     @Override
-    public List<Order> findOrderByCustomerUsername(String username) {
-        return orderDao.findOrderByCustomerUsername(username);
+    public List<Order> findOrderByUsername(String username, int limit, int offset) {
+        return orderDao.findOrderByUsername(username, limit, offset);
+    }
+
+    @Override
+    public Optional<Order> findOrderById(int orderId) {
+        return orderDao.findById(orderId);
     }
 }

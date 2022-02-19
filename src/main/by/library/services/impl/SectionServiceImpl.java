@@ -6,6 +6,7 @@ import main.by.library.entity.Section;
 import main.by.library.services.SectionService;
 
 import java.util.List;
+import java.util.Optional;
 
 public class SectionServiceImpl implements SectionService {
 
@@ -16,27 +17,42 @@ public class SectionServiceImpl implements SectionService {
     }
 
     @Override
-    public List<Section> findAllSection(int offset) {
-        return sectionDao.findAllSection(offset);
+    public List<Section> findAllSection(int limit, int offset) {
+        return sectionDao.findAll(limit, offset);
     }
 
     @Override
     public boolean addNewSection(Section section) {
-        return sectionDao.addNewSection(section);
+        return sectionDao.addNew(section);
     }
 
     @Override
-    public List<Section> findSectionByName(String sectionName) {
+    public Optional<Section> findSectionByName(String sectionName) {
         return sectionDao.findSectionByName(sectionName);
     }
 
     @Override
     public boolean updateSection(Section section) {
-        return sectionDao.updateSection(section);
+        return sectionDao.update(section);
     }
 
     @Override
     public boolean deleteSection(Section section) {
-        return sectionDao.deleteSection(section);
+        return sectionDao.delete(section);
+    }
+
+    @Override
+    public int getCountSection() {
+        return sectionDao.getCount();
+    }
+
+    @Override
+    public boolean isSectionExist(String sectionName) {
+        return sectionDao.isSectionExist(sectionName);
+    }
+
+    @Override
+    public Optional<Section> findById(int id) {
+        return sectionDao.findById(id);
     }
 }

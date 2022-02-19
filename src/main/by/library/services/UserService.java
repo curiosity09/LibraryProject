@@ -11,15 +11,19 @@ public interface UserService {
 
     int getCountUser();
 
-    List<User> findAllUsers(int offset);
+    List<User> findAllUsers(int limit, int offset);
 
     boolean blockUser(User user);
 
     Optional<User> findUserByUsername(String username);
 
-    User checkAuthentication(String username);
-
-    boolean isUserExist(String value);
+    boolean isUserExist(String username);
 
     Optional<User> findUserById(int userId);
+
+    boolean updateUserData(User user);
+
+    List<User> findAllDebtors(int limit, int offset);
+
+    boolean delete(User user);
 }

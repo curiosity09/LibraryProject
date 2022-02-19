@@ -2,22 +2,22 @@ package main.by.library.services;
 
 import main.by.library.entity.Book;
 
-import java.sql.Connection;
 import java.util.List;
+import java.util.Optional;
 
 public interface BookService {
 
-    Book findBookById(int bookId);
+    Optional<Book> findBookById(int bookId);
 
-    List<Book> findBookByName(String bookName);
+    List<Book> findBookByName(String bookName, int limit, int offset);
 
-    List<Book> findAllBook(int offset);
+    List<Book> findAllBook(int limit, int offset);
 
-    List<Book> findBookByAuthorFullName(String authorSurname);
+    List<Book> findBookByAuthorFullName(String authorSurname, int limit, int offset);
 
-    List<Book> findBookByGenre(String genreName);
+    List<Book> findBookByGenre(String genreName, int limit, int offset);
 
-    List<Book> findBookBySection(String sectionName);
+    List<Book> findBookBySection(String sectionName, int limit, int offset);
 
     boolean addNewBook(Book book);
 
@@ -25,5 +25,7 @@ public interface BookService {
 
     int getCountBook();
 
-    List<Book> getByOrderId(int id);
+    List<Book> getByOrderId(int id, int limit, int offset);
+
+    boolean deleteBook(Book book);
 }

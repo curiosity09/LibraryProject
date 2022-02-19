@@ -6,6 +6,7 @@ import main.by.library.entity.Genre;
 import main.by.library.services.GenreService;
 
 import java.util.List;
+import java.util.Optional;
 
 public class GenreServiceImpl implements GenreService {
 
@@ -16,27 +17,42 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
-    public List<Genre> findAllGenre(int offset) {
-        return genreDao.findAllGenre(offset);
+    public List<Genre> findAllGenre(int limit, int offset) {
+        return genreDao.findAll(limit, offset);
     }
 
     @Override
     public boolean addNewGenre(Genre genre) {
-        return genreDao.addNewGenre(genre);
+        return genreDao.addNew(genre);
     }
 
     @Override
-    public List<Genre> findGenreByName(String genreName) {
+    public Optional<Genre> findGenreByName(String genreName) {
         return genreDao.findGenreByName(genreName);
     }
 
     @Override
     public boolean updateGenre(Genre genre) {
-        return genreDao.updateGenre(genre);
+        return genreDao.update(genre);
     }
 
     @Override
     public boolean deleteGenre(Genre genre) {
-        return genreDao.deleteGenre(genre);
+        return genreDao.delete(genre);
+    }
+
+    @Override
+    public int getCountGenre() {
+        return genreDao.getCount();
+    }
+
+    @Override
+    public boolean isGenreExist(String genreName) {
+        return genreDao.isGenreExist(genreName);
+    }
+
+    @Override
+    public Optional<Genre> findById(int id) {
+        return genreDao.findById(id);
     }
 }
