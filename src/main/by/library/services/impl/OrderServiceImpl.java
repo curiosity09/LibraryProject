@@ -11,9 +11,22 @@ import java.util.Optional;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderDao orderDao;
+    private static OrderServiceImpl instance;
 
-    public OrderServiceImpl(){
+    private OrderServiceImpl(){
         orderDao = OrderDaoImpl.getInstance();
+    }
+
+    /**
+     * Returns instance if the object has already been created
+     *
+     * @return instance
+     */
+    public static OrderServiceImpl getInstance() {
+        if (instance == null) {
+            instance = new OrderServiceImpl();
+        }
+        return instance;
     }
 
     @Override

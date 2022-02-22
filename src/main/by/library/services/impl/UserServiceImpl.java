@@ -11,9 +11,22 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserDao userDao;
+    private static UserServiceImpl instance;
 
-    public UserServiceImpl() {
+    private UserServiceImpl() {
         userDao = UserDaoImpl.getInstance();
+    }
+
+    /**
+     * Returns instance if the object has already been created
+     *
+     * @return instance
+     */
+    public static UserServiceImpl getInstance() {
+        if (instance == null) {
+            instance = new UserServiceImpl();
+        }
+        return instance;
     }
 
     @Override

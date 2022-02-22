@@ -9,10 +9,24 @@ import java.util.List;
 import java.util.Optional;
 
 public class AuthorServiceImpl implements AuthorService {
+
+    private static AuthorServiceImpl instance;
     private final AuthorDao authorDao;
 
-    public AuthorServiceImpl(){
+    private AuthorServiceImpl() {
         authorDao = AuthorDaoImpl.getInstance();
+    }
+
+    /**
+     * Returns instance if the object has already been created
+     *
+     * @return instance
+     */
+    public static AuthorServiceImpl getInstance() {
+        if (instance == null) {
+            instance = new AuthorServiceImpl();
+        }
+        return instance;
     }
 
     @Override
