@@ -13,5 +13,10 @@ class ConnectionPoolTest {
         assertSame(firstInstance, secondInstance);
     }
 
-
+    @Test
+    void sameCountConnection() {
+        int actual = ConnectionPool.getInstance().countUnusedConnection();
+        int expected = Integer.parseInt(PropertiesManager.getPropertyByKey("db.size"));
+        assertSame(expected, actual);
+    }
 }
