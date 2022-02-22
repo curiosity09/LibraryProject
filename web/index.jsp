@@ -9,12 +9,11 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <jsp:include page="/WEB-INF/locale.jsp"/>
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Login page</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}resources/static/css/bootstrap.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/static/css/bootstrap.css">
 </head>
 <body>
 <header class="p-3 bg-dark text-white">
@@ -73,6 +72,6 @@
         </div>
     </div>
 </div>
-<script src="${pageContext.request.contextPath}resources/static/js/bootstrap.js"></script>
+<script src="${pageContext.request.contextPath}/resources/static/js/bootstrap.js"></script>
 </body>
 </html>
