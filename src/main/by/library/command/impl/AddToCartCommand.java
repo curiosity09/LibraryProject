@@ -4,8 +4,8 @@ import main.by.library.command.Command;
 import main.by.library.command.CommandResult;
 import main.by.library.entity.Book;
 import main.by.library.entity.ShoppingCart;
-import main.by.library.util.LoggerUtil;
-import main.by.library.util.PageUtil;
+import main.by.library.services.BookService;
+import main.by.library.services.impl.BookServiceImpl;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -13,10 +13,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-public class AddToCartCommand implements Command, PageUtil, LoggerUtil {
+import static main.by.library.util.PageUtil.*;
+
+public class AddToCartCommand implements Command {
 
     @Override
     public CommandResult execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        BookService bookService = BookServiceImpl.getInstance();
         ShoppingCart shoppingCart = (ShoppingCart) req.getSession().getAttribute(SHOPPING_CART_ATTRIBUTE);
         String[] books = req.getParameterValues(BOOK_ID_PARAMETER);
         for (String book : books) {

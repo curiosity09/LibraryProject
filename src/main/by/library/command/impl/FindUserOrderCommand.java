@@ -2,12 +2,14 @@ package main.by.library.command.impl;
 
 import main.by.library.command.Command;
 import main.by.library.command.CommandResult;
+import main.by.library.services.OrderService;
+import main.by.library.services.UserService;
+import main.by.library.services.impl.OrderServiceImpl;
+import main.by.library.services.impl.UserServiceImpl;
 import main.by.library.util.UtilCommand;
 import main.by.library.entity.Order;
 import main.by.library.entity.User;
 import main.by.library.util.JSPUtil;
-import main.by.library.util.LoggerUtil;
-import main.by.library.util.PageUtil;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,12 +21,17 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
-public class FindUserOrderCommand implements Command, PageUtil, LoggerUtil {
+import static main.by.library.util.LoggerUtil.*;
+import static main.by.library.util.PageUtil.*;
+
+public class FindUserOrderCommand implements Command {
 
     private static final Logger LOGGER = LogManager.getLogger(FindUserOrderCommand.class);
 
     @Override
     public CommandResult execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        OrderService orderService = OrderServiceImpl.getInstance();
+        UserService userService = UserServiceImpl.getInstance();
         LOGGER.log(Level.INFO, ENTER_METHOD_MESSAGE);
         String username = req.getParameter(USERNAME_PARAMETER);
         LOGGER.log(Level.INFO, PARAM_REQUEST_MESSAGE);

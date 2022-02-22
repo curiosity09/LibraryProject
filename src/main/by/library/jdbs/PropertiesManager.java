@@ -1,13 +1,14 @@
 package main.by.library.jdbs;
 
-import main.by.library.util.LoggerUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Properties;
 
-public final class PropertiesManager implements LoggerUtil {
+import static main.by.library.util.LoggerUtil.*;
+
+public final class PropertiesManager {
 
     private static final Properties properties = new Properties();
     private static final Logger LOGGER = LogManager.getLogger(PropertiesManager.class);

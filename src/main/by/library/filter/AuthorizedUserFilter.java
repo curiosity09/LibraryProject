@@ -11,8 +11,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Objects;
 
+import static main.by.library.util.PageUtil.*;
+
 @WebFilter(urlPatterns = {"/", "/index.jsp", "/register.jsp"})
-public class AuthorizedUserFilter implements Filter, PageUtil {
+public class AuthorizedUserFilter implements Filter {
 
     @Override
     public void doFilter(

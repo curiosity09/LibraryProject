@@ -11,9 +11,22 @@ import java.util.Optional;
 public class BookServiceImpl implements BookService {
 
     private final BookDao bookDao;
+    private static BookServiceImpl instance;
 
-    public BookServiceImpl() {
+    private BookServiceImpl() {
         bookDao = BookDaoImpl.getInstance();
+    }
+
+    /**
+     * Returns instance if the object has already been created
+     *
+     * @return instance
+     */
+    public static BookServiceImpl getInstance() {
+        if (instance == null) {
+            instance = new BookServiceImpl();
+        }
+        return instance;
     }
 
     @Override

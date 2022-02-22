@@ -3,7 +3,6 @@ package main.by.library.dao.impl;
 import main.by.library.dao.BookDao;
 import main.by.library.dao.GenericDaoImpl;
 import main.by.library.entity.*;
-import main.by.library.jdbs.ConnectionPool;
 
 import java.sql.*;
 import java.util.List;

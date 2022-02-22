@@ -6,9 +6,11 @@ import main.by.library.entity.Book;
 import main.by.library.entity.Order;
 import main.by.library.entity.ShoppingCart;
 import main.by.library.entity.User;
+import main.by.library.services.BookService;
+import main.by.library.services.OrderService;
+import main.by.library.services.impl.BookServiceImpl;
+import main.by.library.services.impl.OrderServiceImpl;
 import main.by.library.util.JSPUtil;
-import main.by.library.util.LoggerUtil;
-import main.by.library.util.PageUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,12 +26,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class AddOrderCommand implements Command, LoggerUtil, PageUtil {
+import static main.by.library.util.LoggerUtil.*;
+import static main.by.library.util.PageUtil.*;
+
+public class AddOrderCommand implements Command {
 
     private static final Logger LOGGER = LogManager.getLogger(AddOrderCommand.class);
 
     @Override
     public CommandResult execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        OrderService orderService = OrderServiceImpl.getInstance();
+        BookService bookService = BookServiceImpl.getInstance();
         LOGGER.info(ENTER_METHOD_MESSAGE);
         User user = (User) req.getSession().getAttribute(USER_ATTRIBUTE);
         ShoppingCart selectedBooks = (ShoppingCart) req.getSession().getAttribute(SHOPPING_CART_ATTRIBUTE);

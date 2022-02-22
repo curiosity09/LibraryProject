@@ -4,6 +4,8 @@ import main.by.library.command.Command;
 import main.by.library.command.CommandResult;
 import main.by.library.entity.Book;
 import main.by.library.entity.ShoppingCart;
+import main.by.library.services.BookService;
+import main.by.library.services.impl.BookServiceImpl;
 import main.by.library.util.JSPUtil;
 import main.by.library.util.LoggerUtil;
 import main.by.library.util.PageUtil;
@@ -16,12 +18,16 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-public class DelBookFromOrderCommand implements Command, LoggerUtil, PageUtil {
+import static main.by.library.util.LoggerUtil.*;
+import static main.by.library.util.PageUtil.*;
+
+public class DelBookFromOrderCommand implements Command {
 
     private static final Logger LOGGER = LogManager.getLogger(DelBookFromOrderCommand.class);
 
     @Override
     public CommandResult execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        BookService bookService = BookServiceImpl.getInstance();
         LOGGER.info(ENTER_METHOD_MESSAGE);
         ShoppingCart selectedBooks = (ShoppingCart) req.getSession().getAttribute(SHOPPING_CART_ATTRIBUTE);
         int bookId = Integer.parseInt(req.getParameter(BOOK_ID_PARAMETER));

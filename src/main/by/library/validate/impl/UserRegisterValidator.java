@@ -2,7 +2,6 @@ package main.by.library.validate.impl;
 
 import main.by.library.entity.User;
 import main.by.library.entity.UserData;
-import main.by.library.util.PageUtil;
 import main.by.library.validate.Validator;
 import org.apache.commons.codec.binary.Base64;
 
@@ -12,7 +11,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-public class UserRegisterValidator implements Validator<User>, PageUtil {
+import static main.by.library.util.PageUtil.*;
+
+public class UserRegisterValidator implements Validator<User> {
 
     @Override
     public Optional<User> validate(HttpServletRequest req) {

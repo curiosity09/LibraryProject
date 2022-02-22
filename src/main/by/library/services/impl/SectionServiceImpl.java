@@ -11,9 +11,22 @@ import java.util.Optional;
 public class SectionServiceImpl implements SectionService {
 
     private final SectionDao sectionDao;
+    private static SectionServiceImpl instance;
 
-    public SectionServiceImpl() {
+    private SectionServiceImpl() {
         sectionDao = SectionDaoImpl.getInstance();
+    }
+
+    /**
+     * Returns instance if the object has already been created
+     *
+     * @return instance
+     */
+    public static SectionServiceImpl getInstance() {
+        if (instance == null) {
+            instance = new SectionServiceImpl();
+        }
+        return instance;
     }
 
     @Override

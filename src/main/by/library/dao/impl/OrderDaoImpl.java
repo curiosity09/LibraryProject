@@ -5,7 +5,6 @@ import main.by.library.dao.GenericDaoImpl;
 import main.by.library.dao.OrderDao;
 import main.by.library.dao.UserDao;
 import main.by.library.entity.*;
-import main.by.library.jdbs.ConnectionPool;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,6 +13,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static main.by.library.util.LoggerUtil.*;
 
 public class OrderDaoImpl extends GenericDaoImpl<Order> implements OrderDao {
 
@@ -193,4 +194,3 @@ public class OrderDaoImpl extends GenericDaoImpl<Order> implements OrderDao {
         return result;
     }
 }
-

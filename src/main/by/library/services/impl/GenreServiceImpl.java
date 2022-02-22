@@ -11,9 +11,22 @@ import java.util.Optional;
 public class GenreServiceImpl implements GenreService {
 
     private final GenreDao genreDao;
+    private static GenreServiceImpl instance;
 
-    public GenreServiceImpl(){
+    private GenreServiceImpl(){
         genreDao = GenreDaoImpl.getInstance();
+    }
+
+    /**
+     * Returns instance if the object has already been created
+     *
+     * @return instance
+     */
+    public static GenreServiceImpl getInstance() {
+        if (instance == null) {
+            instance = new GenreServiceImpl();
+        }
+        return instance;
     }
 
     @Override

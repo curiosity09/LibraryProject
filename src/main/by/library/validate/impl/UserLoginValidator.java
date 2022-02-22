@@ -1,7 +1,8 @@
 package main.by.library.validate.impl;
 
 import main.by.library.entity.User;
-import main.by.library.util.PageUtil;
+import main.by.library.services.UserService;
+import main.by.library.services.impl.UserServiceImpl;
 import main.by.library.validate.Validator;
 import org.apache.commons.codec.binary.Base64;
 
@@ -10,12 +11,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 
-import static main.by.library.command.Command.userService;
+import static main.by.library.util.PageUtil.*;
 
-public class UserLoginValidator implements Validator<User>, PageUtil {
+public class UserLoginValidator implements Validator<User> {
 
     @Override
     public Optional<User> validate(HttpServletRequest req) {
+        UserService userService = UserServiceImpl.getInstance();
         String username = req.getParameter(USERNAME_PARAMETER);
         String password = req.getParameter(PASSWORD_PARAMETER);
         if (Objects.nonNull(username) && !username.isBlank() && Objects.nonNull(password) && !password.isBlank()) {
