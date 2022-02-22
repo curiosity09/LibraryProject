@@ -4,9 +4,11 @@ import main.by.library.command.Command;
 import main.by.library.command.CommandResult;
 import main.by.library.entity.Book;
 import main.by.library.entity.Order;
+import main.by.library.services.BookService;
+import main.by.library.services.OrderService;
+import main.by.library.services.impl.BookServiceImpl;
+import main.by.library.services.impl.OrderServiceImpl;
 import main.by.library.util.JSPUtil;
-import main.by.library.util.LoggerUtil;
-import main.by.library.util.PageUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,12 +19,17 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
-public class FinishOrderCommand implements Command, PageUtil, LoggerUtil {
+import static main.by.library.util.LoggerUtil.*;
+import static main.by.library.util.PageUtil.*;
+
+public class FinishOrderCommand implements Command {
 
     private static final Logger LOGGER = LogManager.getLogger(FinishOrderCommand.class);
 
     @Override
     public CommandResult execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        OrderService orderService = OrderServiceImpl.getInstance();
+        BookService bookService = BookServiceImpl.getInstance();
         LOGGER.info(ENTER_METHOD_MESSAGE);
         String[] orderIds = req.getParameterValues(ORDER_ID_PARAMETER);
         String username = req.getParameter(USERNAME_PARAMETER);

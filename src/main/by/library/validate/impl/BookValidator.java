@@ -4,7 +4,6 @@ import main.by.library.entity.Author;
 import main.by.library.entity.Book;
 import main.by.library.entity.Genre;
 import main.by.library.entity.Section;
-import main.by.library.util.PageUtil;
 import main.by.library.validate.Validator;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,7 +11,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-public class BookValidator implements Validator<Book>, PageUtil {
+import static main.by.library.util.PageUtil.*;
+
+public class BookValidator implements Validator<Book> {
 
     @Override
     public Optional<Book> validate(HttpServletRequest req) {

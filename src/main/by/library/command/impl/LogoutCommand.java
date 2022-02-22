@@ -3,14 +3,12 @@ package main.by.library.command.impl;
 import main.by.library.command.Command;
 import main.by.library.command.CommandResult;
 import main.by.library.util.JSPUtil;
-import main.by.library.util.LoggerUtil;
-import main.by.library.util.PageUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-public class LogoutCommand implements Command, PageUtil, LoggerUtil {
+public class LogoutCommand implements Command {
 
     @Override
     public CommandResult execute(HttpServletRequest req, HttpServletResponse resp) {

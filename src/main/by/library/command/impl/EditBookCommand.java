@@ -2,11 +2,17 @@ package main.by.library.command.impl;
 
 import main.by.library.command.Command;
 import main.by.library.command.CommandResult;
+import main.by.library.services.AuthorService;
+import main.by.library.services.BookService;
+import main.by.library.services.GenreService;
+import main.by.library.services.SectionService;
+import main.by.library.services.impl.AuthorServiceImpl;
+import main.by.library.services.impl.BookServiceImpl;
+import main.by.library.services.impl.GenreServiceImpl;
+import main.by.library.services.impl.SectionServiceImpl;
 import main.by.library.util.UtilCommand;
 import main.by.library.entity.Book;
 import main.by.library.util.JSPUtil;
-import main.by.library.util.LoggerUtil;
-import main.by.library.util.PageUtil;
 import main.by.library.validate.Validator;
 import main.by.library.validate.impl.BookValidator;
 
@@ -16,10 +22,16 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-public class EditBookCommand implements Command, PageUtil, LoggerUtil {
+import static main.by.library.util.PageUtil.*;
+
+public class EditBookCommand implements Command {
 
     @Override
     public CommandResult execute(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        AuthorService authorService = AuthorServiceImpl.getInstance();
+        BookService bookService = BookServiceImpl.getInstance();
+        GenreService genreService = GenreServiceImpl.getInstance();
+        SectionService sectionService = SectionServiceImpl.getInstance();
         UtilCommand.showAllAuthor(req, authorService.getCountAuthor());
         UtilCommand.showAllSection(req, sectionService.getCountSection());
         UtilCommand.showAllGenre(req, genreService.getCountGenre());

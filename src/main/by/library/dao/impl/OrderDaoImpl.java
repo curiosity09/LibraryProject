@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static main.by.library.util.LoggerUtil.*;
+
 public class OrderDaoImpl extends GenericDaoImpl<Order> implements OrderDao {
 
     public static final int OFFSET_ZERO = 0;
@@ -192,4 +194,3 @@ public class OrderDaoImpl extends GenericDaoImpl<Order> implements OrderDao {
         return result;
     }
 }
-

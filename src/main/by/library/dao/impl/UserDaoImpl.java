@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static main.by.library.util.LoggerUtil.*;
+
 public class UserDaoImpl extends GenericDaoImpl<User> implements UserDao {
 
     private static UserDaoImpl instance;

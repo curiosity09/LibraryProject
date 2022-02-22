@@ -11,7 +11,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class GenericDaoImpl<T> implements LoggerUtil {
+import static main.by.library.util.LoggerUtil.*;
+
+public abstract class GenericDaoImpl<T> {
 
     protected ConnectionPool connectionPool;
     private static final Logger LOGGER = LogManager.getLogger(GenericDaoImpl.class);

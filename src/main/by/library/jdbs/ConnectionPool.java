@@ -1,6 +1,5 @@
 package main.by.library.jdbs;
 
-import main.by.library.util.LoggerUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,7 +11,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ConnectionPool implements LoggerUtil {
+import static main.by.library.util.LoggerUtil.*;
+
+public class ConnectionPool {
 
     private static ConnectionPool instance;
     private static Queue<ProxyConnection> availableConnections = null;
@@ -96,5 +97,9 @@ public class ConnectionPool implements LoggerUtil {
         for (ProxyConnection connection : availableConnections) {
             connection.closeConnection();
         }
+    }
+
+    public int countUnusedConnection(){
+      return availableConnections.size();
     }
 }

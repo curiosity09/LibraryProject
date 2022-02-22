@@ -1,8 +1,6 @@
 package main.by.library.command;
 
 import main.by.library.util.CommandFactory;
-import main.by.library.util.LoggerUtil;
-import main.by.library.util.PageUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,8 +12,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Objects;
 
+import static main.by.library.util.LoggerUtil.*;
+import static main.by.library.util.PageUtil.*;
+
 @WebServlet(urlPatterns = "/controller")
-public class FrontController extends HttpServlet implements LoggerUtil, PageUtil {
+public class FrontController extends HttpServlet {
 
     private static final Logger LOGGER = LogManager.getLogger(FrontController.class);
 

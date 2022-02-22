@@ -2,20 +2,23 @@ package main.by.library.command.impl;
 
 import main.by.library.command.Command;
 import main.by.library.command.CommandResult;
+import main.by.library.services.UserService;
+import main.by.library.services.impl.UserServiceImpl;
 import main.by.library.util.UtilCommand;
 import main.by.library.entity.User;
 import main.by.library.util.JSPUtil;
-import main.by.library.util.LoggerUtil;
-import main.by.library.util.PageUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
-public class ShowAllUsersCommand implements Command, PageUtil, LoggerUtil {
+import static main.by.library.util.PageUtil.*;
+
+public class ShowAllUsersCommand implements Command {
 
     @Override
     public CommandResult execute(HttpServletRequest req, HttpServletResponse resp) {
+        UserService userService = UserServiceImpl.getInstance();
         int countUser = userService.getCountUser();
         UtilCommand.getListOffset(req, countUser);
         String getLimit = req.getParameter(LIMIT_PARAMETER);

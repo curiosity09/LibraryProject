@@ -2,12 +2,12 @@ package main.by.library.command.impl;
 
 import main.by.library.command.Command;
 import main.by.library.command.CommandResult;
+import main.by.library.services.BookService;
+import main.by.library.services.impl.BookServiceImpl;
 import main.by.library.util.UtilCommand;
 import main.by.library.entity.Book;
 import main.by.library.entity.User;
 import main.by.library.util.JSPUtil;
-import main.by.library.util.LoggerUtil;
-import main.by.library.util.PageUtil;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,12 +17,16 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Objects;
 
-public class ShowAllBooksCommand implements Command, PageUtil, LoggerUtil {
+import static main.by.library.util.LoggerUtil.*;
+import static main.by.library.util.PageUtil.*;
+
+public class ShowAllBooksCommand implements Command {
 
     private static final Logger LOGGER = LogManager.getLogger(ShowAllBooksCommand.class);
 
     @Override
     public CommandResult execute(HttpServletRequest req, HttpServletResponse resp) {
+        BookService bookService = BookServiceImpl.getInstance();
         LOGGER.log(Level.INFO, ENTER_METHOD_MESSAGE);
         UtilCommand.getListOffset(req, bookService.getCountBook());
         int offset = Integer.parseInt(req.getParameter(OFFSET_PARAMETER));

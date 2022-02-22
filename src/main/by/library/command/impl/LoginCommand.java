@@ -6,8 +6,6 @@ import main.by.library.entity.Book;
 import main.by.library.entity.ShoppingCart;
 import main.by.library.entity.User;
 import main.by.library.util.JSPUtil;
-import main.by.library.util.LoggerUtil;
-import main.by.library.util.PageUtil;
 import main.by.library.validate.Validator;
 import main.by.library.validate.impl.UserLoginValidator;
 
@@ -17,7 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class LoginCommand implements Command, PageUtil, LoggerUtil {
+import static main.by.library.util.PageUtil.*;
+
+public class LoginCommand implements Command {
 
     @Override
     public CommandResult execute(HttpServletRequest req, HttpServletResponse resp) {
