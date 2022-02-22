@@ -3,14 +3,20 @@ package main.by.library.util;
 import main.by.library.entity.Author;
 import main.by.library.entity.Genre;
 import main.by.library.entity.Section;
+import main.by.library.services.AuthorService;
+import main.by.library.services.GenreService;
+import main.by.library.services.SectionService;
+import main.by.library.services.impl.AuthorServiceImpl;
+import main.by.library.services.impl.GenreServiceImpl;
+import main.by.library.services.impl.SectionServiceImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
-import static main.by.library.command.Command.*;
+import static main.by.library.util.PageUtil.*;
 
-public final class UtilCommand implements PageUtil {
+public final class UtilCommand {
 
     private UtilCommand() {
         throw new UnsupportedOperationException();
@@ -43,8 +49,9 @@ public final class UtilCommand implements PageUtil {
      * @param limit quantity per page
      */
     public static void showAllAuthor(HttpServletRequest req, int limit){
+        AuthorService authorService = AuthorServiceImpl.getInstance();
         List<Author> allAuthor = authorService.findAllAuthor(limit, OFFSET_ZERO);
-        req.setAttribute(AUTHORS_ATTRIBUTE, allAuthor);
+        req.setAttribute(PageUtil.AUTHORS_ATTRIBUTE, allAuthor);
     }
 
     /**
@@ -53,8 +60,9 @@ public final class UtilCommand implements PageUtil {
      * @param limit quantity per page
      */
     public static void showAllGenre(HttpServletRequest req, int limit){
+        GenreService genreService = GenreServiceImpl.getInstance();
         List<Genre> allGenre = genreService.findAllGenre(limit, OFFSET_ZERO);
-        req.setAttribute(GENRES_ATTRIBUTE, allGenre);
+        req.setAttribute(PageUtil.GENRES_ATTRIBUTE, allGenre);
     }
 
     /**
@@ -63,7 +71,8 @@ public final class UtilCommand implements PageUtil {
      * @param limit quantity per page
      */
     public static void showAllSection(HttpServletRequest req, int limit){
+        SectionService sectionService = SectionServiceImpl.getInstance();
         List<Section> allSection = sectionService.findAllSection(limit, OFFSET_ZERO);
-        req.setAttribute(SECTIONS_ATTRIBUTE, allSection);
+        req.setAttribute(PageUtil.SECTIONS_ATTRIBUTE, allSection);
     }
 }
