@@ -5,7 +5,6 @@ import main.by.library.dao.GenericDaoImpl;
 import main.by.library.dao.OrderDao;
 import main.by.library.dao.UserDao;
 import main.by.library.entity.*;
-import main.by.library.jdbs.ConnectionPool;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
